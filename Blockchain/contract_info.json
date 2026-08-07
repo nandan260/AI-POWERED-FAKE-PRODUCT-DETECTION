@@ -1,0 +1,132 @@
+{
+    "address": "0x9eF6AFB7518a4A8a808b1e2A982005D8b2AB8864",
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "serialNo",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "consumer",
+                    "type": "string"
+                }
+            ],
+            "name": "assignConsumer",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "serialNo",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "seller",
+                    "type": "string"
+                }
+            ],
+            "name": "assignSeller",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "name": "products",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "serialNo",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "manufacturer",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "seller",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "consumer",
+                    "type": "string"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "exists",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "serialNo",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "manufacturer",
+                    "type": "string"
+                }
+            ],
+            "name": "registerProduct",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "serialNo",
+                    "type": "string"
+                }
+            ],
+            "name": "verifyProduct",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}

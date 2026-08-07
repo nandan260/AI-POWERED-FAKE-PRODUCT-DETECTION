@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>🏪 Seller Dashboard</h1>
+
+<p>
+Welcome,
+<b>{{ shop_name }}</b>
+</p>
+
+<br>
+<div class="stats-container">
+
+    <div class="stat-card">
+
+        <h2>{{ total_products }}</h2>
+
+        <p>Total Products</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ verified_products }}</h2>
+
+        <p>Verified</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ fake_products }}</h2>
+
+        <p>Fake Detected</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ blockchain_transactions }}</h2>
+
+        <p>Blockchain TX</p>
+
+    </div>
+
+</div>
+
+<div class="dashboard-grid">
+
+    <div class="dashboard-card">
+
+        <h2>👤</h2>
+
+        <h3>Assign Consumer</h3>
+
+        <p>Assign products to consumers.</p>
+
+        <a href="/seller/assign-consumer">
+            <button>Assign Product</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>📜</h2>
+
+        <h3>Assigned Products</h3>
+
+        <p>View products already assigned.</p>
+
+        <a href="/seller/assigned-products">
+            <button>View</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>⛓</h2>
+
+        <h3>Blockchain History</h3>
+
+        <p>View blockchain transactions.</p>
+
+        <a href="/history">
+            <button>History</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>🚪</h2>
+
+        <h3>Logout</h3>
+
+        <p>Exit your account securely.</p>
+
+       <a href="/seller/logout">
+            <button class="danger-btn">Logout</button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

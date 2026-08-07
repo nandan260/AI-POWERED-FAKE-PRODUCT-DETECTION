@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>📊 Admin Dashboard</h1>
+
+<div class="stats-container">
+
+    <div class="stat-card">
+
+        <h2>{{ total_products }}</h2>
+
+        <p>Total Products</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ total_manufacturers }}</h2>
+
+        <p>Manufacturers</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ total_sellers }}</h2>
+
+        <p>Sellers</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ total_consumers }}</h2>
+
+        <p>Consumers</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ total_transactions }}</h2>
+
+        <p>Blockchain Transactions</p>
+
+    </div>
+
+</div>
+
+{% endblock %}

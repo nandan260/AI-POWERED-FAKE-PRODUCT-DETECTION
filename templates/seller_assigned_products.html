@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Assigned Products{% endblock %}
+
+{% block content %}
+
+<h2>Assigned Products</h2>
+
+<div class="table-wrap">
+<table>
+
+<tr>
+    <th>Brand</th>
+    <th>Product</th>
+    <th>Model</th>
+    <th>Serial Number</th>
+    <th>Status</th>
+</tr>
+
+{% for product in products %}
+
+<tr>
+
+<td>{{ product[1] }}</td>
+<td>{{ product[2] }}</td>
+<td>{{ product[3] }}</td>
+<td>{{ product[4] }}</td>
+<td>{{ product[5] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+</div>
+
+<br>
+
+<a href="/seller/dashboard">Back</a>
+
+{% endblock %}

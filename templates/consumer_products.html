@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}My Products{% endblock %}
+
+{% block content %}
+
+<h1>📦 My Products</h1>
+
+<div class="product-grid">
+
+{% for product in products %}
+
+<div class="product-card">
+
+    <img
+        src="{{ url_for('static', filename='product_images/' + product[5]) }}"
+        class="product-card-image"
+        alt="Product Image">
+
+    <div class="product-info">
+
+        <h2>{{ product[2] }}</h2>
+
+        <p><b>Brand:</b> {{ product[1] }}</p>
+
+        <p><b>Model:</b> {{ product[3] }}</p>
+
+        <p><b>Serial:</b> {{ product[4] }}</p>
+
+        <span class="badge-success">
+            Owned
+        </span>
+
+        <br><br>
+
+        <a href="/verify/{{ product[4] }}">
+            <button>Verify Product</button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}
