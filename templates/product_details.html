@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Product Details{% endblock %}
+
+{% block content %}
+
+<div class="product-details">
+
+    <div class="product-image">
+
+        <img
+        src="{{ url_for('static', filename='product_images/' + product[6]) }}">
+
+    </div>
+
+    <div class="product-data">
+
+        <h1>{{ product[2] }}</h1>
+
+        <h3>{{ product[1] }}</h3>
+
+        <hr>
+
+        <p><b>Model :</b> {{ product[3] }}</p>
+
+        <p><b>Serial Number :</b> {{ product[4] }}</p>
+
+        <p><b>Status :</b> {{ product[9] }}</p>
+
+        <br>
+
+        <img
+        src="{{ url_for('static', filename='qr_codes/' + product[7]) }}"
+        class="qr-image">
+
+        <br><br>
+
+        <a href="/manufacturer/history/{{ product[0] }}">
+            <button>
+                View Blockchain History
+            </button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

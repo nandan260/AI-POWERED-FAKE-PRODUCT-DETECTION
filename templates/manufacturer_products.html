@@ -1,0 +1,98 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}My Products{% endblock %}
+
+{% block content %}
+
+<h1>📦 My Products</h1>
+
+<br>
+
+<div class="search-box">
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Search by Brand, Product Name, Model or Serial Number...">
+</div>
+
+<br>
+
+<div class="product-grid" id="productTable">
+
+{% for product in products %}
+
+<div class="product-card">
+
+    <!-- Product Image -->
+    <img
+        src="{{ url_for('static', filename='product_images/' + product[5]) }}"
+        class="product-card-image"
+        alt="Product Image">
+
+    <div class="product-info">
+
+        <h2>{{ product[2] }}</h2>
+
+        <p><b>Brand:</b> {{ product[1] }}</p>
+        <p><b>Model:</b> {{ product[3] }}</p>
+        <p><b>Serial:</b> {{ product[4] }}</p>
+
+        <!-- Product QR Code -->
+        {% if product[6] %}
+        <div class="product-qr">
+            <p><b>Product QR Code</b></p>
+
+            <img
+                src="{{ url_for('static', filename='qr_codes/' + product[6]) }}"
+                alt="QR Code for {{ product[4] }}"
+                width="150">
+        </div>
+        {% else %}
+        <p><b>QR Code:</b> Not available</p>
+        {% endif %}
+
+        <!-- Product Status -->
+        <p>
+            {% if product[7] == "Registered" %}
+                <span class="status-blue">Registered</span>
+            {% elif product[7] == "Assigned to Seller" %}
+                <span class="status-yellow">Assigned to Seller</span>
+            {% elif product[7] == "Assigned to Consumer" %}
+                <span class="status-green">Assigned to Consumer</span>
+            {% else %}
+                <span class="badge-success">{{ product[7] }}</span>
+            {% endif %}
+        </p>
+
+        <br>
+
+        <a href="/history/{{ product[4] }}">
+            <button>History</button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function () {
+
+    let value = this.value.toLowerCase();
+    let cards = document.querySelectorAll(".product-card");
+
+    cards.forEach(function(card) {
+        card.style.display = card.innerText.toLowerCase().includes(value)
+            ? "block"
+            : "none";
+    });
+
+});
+</script>
+
+{% endblock %}
+```

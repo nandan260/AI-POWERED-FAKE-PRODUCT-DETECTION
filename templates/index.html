@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}AI Fake Product Detection{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+
+<section class="hero">
+
+    <div class="hero-left">
+
+        <h1>
+
+            AI Powered Fake Product Detection
+
+        </h1>
+
+        <p>
+
+            Verify product authenticity using Artificial Intelligence,
+            Blockchain Technology and QR Code Verification.
+
+        </p>
+
+        <br>
+
+        <a href="/manufacturer/login">
+
+            <button>
+
+                Manufacturer
+
+            </button>
+
+        </a>
+
+        <a href="/seller/login">
+
+            <button>
+
+                Seller
+
+            </button>
+
+        </a>
+
+        <a href="/consumer/login">
+
+            <button>
+
+                Consumer
+
+            </button>
+
+        </a>
+
+    </div>
+
+    <div class="hero-right">
+
+        <img src="{{ url_for('static', filename='images/hero.png') }}">
+
+    </div>
+
+</section>
+
+<br><br>
+
+<!-- Workflow -->
+
+<h2 class="section-title">
+
+System Workflow
+
+</h2>
+
+<div class="workflow">
+
+    <div class="workflow-card">
+
+        🏭
+
+        <h3>Manufacturer</h3>
+
+        <p>
+
+            Registers genuine products.
+
+        </p>
+
+    </div>
+
+    <div class="arrow">
+
+        ➜
+
+    </div>
+
+    <div class="workflow-card">
+
+        🏪
+
+        <h3>Seller</h3>
+
+        <p>
+
+            Receives products.
+
+        </p>
+
+    </div>
+
+    <div class="arrow">
+
+        ➜
+
+    </div>
+
+    <div class="workflow-card">
+
+        👤
+
+        <h3>Consumer</h3>
+
+        <p>
+
+            Purchases product.
+
+        </p>
+
+    </div>
+
+    <div class="arrow">
+
+        ➜
+
+    </div>
+
+    <div class="workflow-card">
+
+        🤖
+
+        <h3>AI Verification</h3>
+
+        <p>
+
+            MobileNetV2 checks authenticity.
+
+        </p>
+
+    </div>
+
+    <div class="arrow">
+
+        ➜
+
+    </div>
+
+    <div class="workflow-card">
+
+        ⛓
+
+        <h3>Blockchain</h3>
+
+        <p>
+
+            Ownership stored permanently.
+
+        </p>
+
+    </div>
+
+</div>
+
+<br><br>
+
+<!-- Features -->
+
+<h2 class="section-title">
+
+Key Features
+
+</h2>
+
+<div class="features">
+
+    <div class="feature-card">
+
+        <h1>🤖</h1>
+
+        <h3>Artificial Intelligence</h3>
+
+        <p>
+
+            Detect fake products using deep learning.
+
+        </p>
+
+    </div>
+
+    <div class="feature-card">
+
+        <h1>⛓</h1>
+
+        <h3>Blockchain Security</h3>
+
+        <p>
+
+            Tamper-proof ownership verification.
+
+        </p>
+
+    </div>
+
+    <div class="feature-card">
+
+        <h1>📱</h1>
+
+        <h3>QR Verification</h3>
+
+        <p>
+
+            Scan QR codes for instant verification.
+
+        </p>
+
+    </div>
+
+    <div class="feature-card">
+
+        <h1>📜</h1>
+
+        <h3>History Tracking</h3>
+
+        <p>
+
+            Complete ownership timeline.
+
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

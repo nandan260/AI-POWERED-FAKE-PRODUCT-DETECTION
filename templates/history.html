@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Ownership History{% endblock %}
+
+{% block content %}
+
+<h1>⛓ Ownership History</h1>
+
+<h3>Serial Number : {{ serial_no }}</h3>
+
+<br>
+
+{% if history %}
+
+<table class="details-table">
+
+    <tr>
+
+        <th>From Owner</th>
+
+        <th>To Owner</th>
+
+        <th>Transfer Date</th>
+
+        <th>Blockchain Transaction</th>
+
+    </tr>
+
+    {% for row in history %}
+
+    <tr>
+
+        <td>{{ row[0] }}</td>
+
+        <td>{{ row[1] }}</td>
+
+        <td>{{ row[2] }}</td>
+
+        <td style="font-size:12px; word-break:break-all;">
+            {{ row[3] }}
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% else %}
+
+
+<h2 style="text-align:center;color:red;">
+    No Ownership History Found
+</h2>
+
+{% endif %}
+
+<br>
+
+<a href="/manufacturer/products">
+    <button>⬅ Back to My Products</button>
+</a>
+
+{% endblock %}

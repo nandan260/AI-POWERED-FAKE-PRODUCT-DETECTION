@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Product{% endblock %}
+
+{% block content %}
+
+<h1>🔍 Product Verification</h1>
+
+<br>
+
+<div class="verify-container">
+
+    <!-- Product Image -->
+
+    <div class="verify-left">
+
+        <img
+        src="{{ url_for('static',
+        filename='product_images/' + product[4]) }}"
+
+    </div>
+
+    <!-- Product Details -->
+
+    <div class="verify-right">
+
+        <h2>{{ product[2] }}</h2>
+
+        <table class="details-table">
+
+            <tr>
+                <td><b>Brand</b></td>
+                <td>{{ product[0] }}</td>
+            </tr>
+
+            <tr>
+                <td><b>Model</b></td>
+                <td>{{ product[2] }}</td>
+            </tr>
+
+            <tr>
+                <td><b>Serial No</b></td>
+                <td>{{ product[3] }}</td>
+            </tr>
+
+            <tr>
+                <td><b>Status</b></td>
+                <td>
+
+                    <span class="badge-success">
+
+                       {{ product[5] }}
+
+                    </span>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+        <br>
+
+{% if logged_in %}
+
+<form
+action="/verify-image"
+method="POST"
+enctype="multipart/form-data">
+
+<input
+type="hidden"
+name="serial_no"
+value="{{ product[3] }}">
+
+<label>
+
+Upload Product Image
+
+</label>
+
+<input
+type="file"
+name="consumer_image"
+accept="image/*"
+required>
+
+<br><br>
+
+<button>
+
+🤖 Verify using AI
+
+</button>
+
+</form>
+
+{% else %}
+
+<a href="/consumer/login">
+
+<button>
+
+Login to Verify
+
+</button>
+
+</a>
+
+{% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
