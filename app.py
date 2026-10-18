@@ -826,6 +826,7 @@ def consumer_logout():
     return redirect("/consumer/login")
 
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -834,121 +835,163 @@ def register():
 
     if request.method == "POST":
 
+        # 1. Get product details from the form
         brand = request.form["brand"]
         product_name = request.form["product_name"]
         model_name = request.form["model_name"]
         serial_no = request.form["serial_no"]
         original_image = request.files["original_image"]
 
-
-        
         manufacturer_id = session["manufacturer_id"]
-        
+
+        # 2. Validate the uploaded image
+        if not original_image or not original_image.filename:
+            return "Please select a product image.", 400
+
         filename = secure_filename(original_image.filename)
 
+        if not filename:
+            return "Invalid image filename.", 400
+
+        # Create required folders if they do not exist
+        os.makedirs("static/product_images", exist_ok=True)
+        os.makedirs("static/qr_codes", exist_ok=True)
+
+        # Give the uploaded image a unique filename
+        import uuid
+
+        extension = os.path.splitext(filename)[1]
+        filename = f"{uuid.uuid4().hex}{extension}"
+
         image_path = os.path.join(
-        "static",
-        "product_images",
-        filename
-    )
+            "static",
+            "product_images",
+            filename
+        )
+
         original_image.save(image_path)
 
+        # 3. Save the product in SQLite
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
 
-        
-        cursor.execute("""
-       INSERT INTO products
-        (
-         manufacturer_id,
-         brand,
-         product_name,
-         model_name,
-         serial_no,
-         original_image,
-         qr_code,
-         current_owner_type,
-         current_owner_id,
-         status
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
-        """,
-        (
-        manufacturer_id,
-        brand,
-        product_name,
-        model_name,
-        serial_no,
-        filename,
-        "",
-        "Manufacturer",
-        manufacturer_id,
-        "Registered"
-        ))
+        try:
+            cursor.execute("""
+                INSERT INTO products (
+                    manufacturer_id,
+                    brand,
+                    product_name,
+                    model_name,
+                    serial_no,
+                    original_image,
+                    qr_code,
+                    current_owner_type,
+                    current_owner_id,
+                    status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                manufacturer_id,
+                brand,
+                product_name,
+                model_name,
+                serial_no,
+                filename,
+                "",
+                "Manufacturer",
+                manufacturer_id,
+                "Registered"
+            ))
 
-        conn.commit()
+            conn.commit()
+            product_id = cursor.lastrowid
 
+            # 4. Register the product on the blockchain
+            tx_hash = None
 
-        
-        product_id = cursor.lastrowid
-        tx_hash = register_product(
-        serial_no,
-        brand
-    )
-        print("Blockchain TX:", tx_hash)
-        print("Blockchain Data:", verify_product(serial_no))
+            try:
+                tx_hash = register_product(serial_no, brand)
 
+                print("Blockchain TX:", tx_hash)
 
-        cursor.execute("""
-        UPDATE products
-        SET blockchain_tx=?
-        WHERE id=?
-        """,
-        (
-        tx_hash,
-        product_id
-    ))
+                blockchain_data = verify_product(serial_no)
+                print("Blockchain Data:", blockchain_data)
 
-        conn.commit()
-    
-        qr_data = f"http://127.0.0.1:5000/verify/{serial_no}"
+            except Exception:
+                app.logger.exception(
+                    "Blockchain registration failed for serial number: %s",
+                    serial_no
+                )
 
-  
-        qr = qrcode.QRCode(
-            version=1,
-            box_size=10,
-            border=5
-        )
+            # Save transaction hash only if registration succeeded
+            if tx_hash:
+                cursor.execute("""
+                    UPDATE products
+                    SET blockchain_tx = ?
+                    WHERE id = ?
+                """, (tx_hash, product_id))
 
-        qr.add_data(qr_data)
-        qr.make(fit=True)
+                conn.commit()
 
-        img = qr.make_image(fill_color="black", back_color="white")
+            # 5. Generate a QR code using the current website URL
+            qr_data = (
+                f"{request.url_root.rstrip('/')}/verify/{serial_no}"
+            )
 
-  
-        qr_filename = f"{serial_no}.png"
+            qr = qrcode.QRCode(
+                version=1,
+                box_size=10,
+                border=5
+            )
 
-    
-        qr_path = os.path.join("static", "qr_codes", qr_filename)
-        img.save(qr_path)
+            qr.add_data(qr_data)
+            qr.make(fit=True)
 
-     
-        cursor.execute("""
-        UPDATE products
-        SET qr_code=?
-        WHERE id=?
-        """,
-        (
-            qr_filename,
-            product_id
-        ))
+            qr_image = qr.make_image(
+                fill_color="black",
+                back_color="white"
+            )
 
-        conn.commit()
-        conn.close()
+            qr_filename = f"{uuid.uuid4().hex}.png"
 
+            qr_path = os.path.join(
+                "static",
+                "qr_codes",
+                qr_filename
+            )
+
+            qr_image.save(qr_path)
+
+            # 6. Save QR-code filename in the database
+            cursor.execute("""
+                UPDATE products
+                SET qr_code = ?
+                WHERE id = ?
+            """, (qr_filename, product_id))
+
+            conn.commit()
+
+        except sqlite3.Error:
+            conn.rollback()
+
+            app.logger.exception(
+                "Database error while registering product."
+            )
+
+            return (
+                "Unable to save the product. "
+                "Please check the application logs.",
+                500
+            )
+
+        finally:
+            conn.close()
+
+        # 7. Return to the manufacturer's product list
         return redirect("/manufacturer/products")
 
     return render_template("register.html")
+
 
 @app.route("/consumer/products")
 def consumer_products():
