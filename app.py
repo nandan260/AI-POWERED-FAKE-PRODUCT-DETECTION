@@ -836,11 +836,11 @@ def register():
     if request.method == "POST":
 
         # 1. Get product details from the form
-        brand = request.form["brand"]
-        product_name = request.form["product_name"]
-        model_name = request.form["model_name"]
-        serial_no = request.form["serial_no"]
-        original_image = request.files["original_image"]
+        brand = request.form["brand"].strip()
+        product_name = request.form["product_name"].strip()
+        model_name = request.form["model_name"].strip()
+        serial_no = request.form["serial_no"].strip()
+        original_image = request.files.get("original_image")
 
         manufacturer_id = session["manufacturer_id"]
 
@@ -853,11 +853,11 @@ def register():
         if not filename:
             return "Invalid image filename.", 400
 
-        # Create required folders if they do not exist
+        # Create required folders
         os.makedirs("static/product_images", exist_ok=True)
         os.makedirs("static/qr_codes", exist_ok=True)
 
-        # Give the uploaded image a unique filename
+        # Generate a unique image filename
         import uuid
 
         extension = os.path.splitext(filename)[1]
@@ -869,13 +869,32 @@ def register():
             filename
         )
 
+        # 3. Save the uploaded image
         original_image.save(image_path)
 
-        # 3. Save the product in SQLite
         conn = sqlite3.connect("database.db")
         cursor = conn.cursor()
 
         try:
+            # 4. Check whether the serial number already exists
+            cursor.execute(
+                "SELECT id FROM products WHERE serial_no = ?",
+                (serial_no,)
+            )
+
+            existing_product = cursor.fetchone()
+
+            if existing_product:
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+
+                return (
+                    "This serial number is already registered. "
+                    "Please use a unique serial number.",
+                    409
+                )
+
+            # 5. Insert the product into SQLite
             cursor.execute("""
                 INSERT INTO products (
                     manufacturer_id,
@@ -906,16 +925,25 @@ def register():
             conn.commit()
             product_id = cursor.lastrowid
 
-            # 4. Register the product on the blockchain
+            # 6. Register the product on the blockchain
             tx_hash = None
 
             try:
                 tx_hash = register_product(serial_no, brand)
 
-                print("Blockchain TX:", tx_hash)
+                app.logger.info(
+                    "Blockchain transaction for %s: %s",
+                    serial_no,
+                    tx_hash
+                )
 
                 blockchain_data = verify_product(serial_no)
-                print("Blockchain Data:", blockchain_data)
+
+                app.logger.info(
+                    "Blockchain data for %s: %s",
+                    serial_no,
+                    blockchain_data
+                )
 
             except Exception:
                 app.logger.exception(
@@ -923,7 +951,7 @@ def register():
                     serial_no
                 )
 
-            # Save transaction hash only if registration succeeded
+            # Save the transaction hash if blockchain registration succeeded
             if tx_hash:
                 cursor.execute("""
                     UPDATE products
@@ -933,7 +961,7 @@ def register():
 
                 conn.commit()
 
-            # 5. Generate a QR code using the current website URL
+            # 7. Generate the QR code
             qr_data = (
                 f"{request.url_root.rstrip('/')}/verify/{serial_no}"
             )
@@ -962,7 +990,7 @@ def register():
 
             qr_image.save(qr_path)
 
-            # 6. Save QR-code filename in the database
+            # 8. Save the QR-code filename in SQLite
             cursor.execute("""
                 UPDATE products
                 SET qr_code = ?
@@ -970,6 +998,28 @@ def register():
             """, (qr_filename, product_id))
 
             conn.commit()
+
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+
+            # Handle duplicate serial numbers safely
+            if "products.serial_no" in str(e):
+                app.logger.warning(
+                    "Duplicate serial number attempted: %s",
+                    serial_no
+                )
+
+                return (
+                    "This serial number is already registered. "
+                    "Please use a unique serial number.",
+                    409
+                )
+
+            app.logger.exception(
+                "Database integrity error during product registration."
+            )
+
+            return "Invalid or duplicate product details.", 409
 
         except sqlite3.Error:
             conn.rollback()
@@ -984,10 +1034,23 @@ def register():
                 500
             )
 
+        except Exception:
+            conn.rollback()
+
+            app.logger.exception(
+                "Unexpected error during product registration."
+            )
+
+            return (
+                "An unexpected error occurred while registering "
+                "the product. Please check the application logs.",
+                500
+            )
+
         finally:
             conn.close()
 
-        # 7. Return to the manufacturer's product list
+        # 9. Return to the manufacturer's product list
         return redirect("/manufacturer/products")
 
     return render_template("register.html")
