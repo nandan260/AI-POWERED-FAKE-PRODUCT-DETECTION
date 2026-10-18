@@ -1,7 +1,11 @@
 
-flask
+Flask
 qrcode
-pillow
+Pillow
 torch
 torchvision
 gunicorn
+web3
+py-solc-x
+opencv-python-headless
+scikit-image
