@@ -430,24 +430,78 @@ def seller_register():
 
     if request.method == "POST":
 
-        shop_name = request.form["shop_name"]
-        email = request.form["email"]
+        shop_name = request.form["shop_name"].strip()
+        email = request.form["email"].strip().lower()
         password = request.form["password"]
 
-        conn = sqlite3.connect("database.db")
-        cursor = conn.cursor()
+        conn = None
 
-        cursor.execute("""
-        INSERT INTO sellers(shop_name, email, password)
-        VALUES (?, ?, ?)
-        """, (shop_name, email, password))
+        try:
+            # 1. Connect to SQLite and wait for a lock if necessary
+            conn = sqlite3.connect("database.db", timeout=30)
+            cursor = conn.cursor()
 
-        conn.commit()
-        conn.close()
+            # 2. Check whether this email is already registered
+            cursor.execute(
+                "SELECT id FROM sellers WHERE email = ?",
+                (email,)
+            )
 
-        return "Seller Registered Successfully"
+            if cursor.fetchone():
+                return "This email is already registered.", 409
+
+            # 3. Register the seller
+            cursor.execute("""
+                INSERT INTO sellers (shop_name, email, password)
+                VALUES (?, ?, ?)
+            """, (shop_name, email, password))
+
+            conn.commit()
+
+            return "Seller Registered Successfully"
+
+        except sqlite3.IntegrityError:
+            if conn:
+                conn.rollback()
+
+            app.logger.exception(
+                "Seller registration failed due to a database constraint."
+            )
+
+            return (
+                "Registration failed. This email may already be registered.",
+                409
+            )
+
+        except sqlite3.OperationalError:
+            if conn:
+                conn.rollback()
+
+            app.logger.exception(
+                "Database operational error during seller registration."
+            )
+
+            return (
+                "The database is temporarily busy. Please try again.",
+                503
+            )
+
+        except sqlite3.Error:
+            if conn:
+                conn.rollback()
+
+            app.logger.exception(
+                "Database error during seller registration."
+            )
+
+            return "Unable to register the seller. Please try again.", 500
+
+        finally:
+            if conn:
+                conn.close()
 
     return render_template("seller_register.html")
+
 
 
 @app.route("/seller/login", methods=["GET", "POST"])
