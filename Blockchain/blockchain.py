@@ -1,92 +1,70 @@
 
 from web3 import Web3
 import json
-import os
 from pathlib import Path
 
-# Use Ganache locally, or a remote RPC URL configured on Render.
-rpc_url = os.environ.get(
-    "BLOCKCHAIN_RPC_URL",
-    "http://127.0.0.1:7545"
-)
+# Connect to local Ganache
+RPC_URL = "http://127.0.0.1:7545"
+w3 = Web3(Web3.HTTPProvider(RPC_URL))
 
-w3 = Web3(Web3.HTTPProvider(rpc_url))
-
-# Load the deployed contract information.
+# Load contract details
 contract_info_path = Path(__file__).resolve().parent / "contract_info.json"
 
-with open(contract_info_path, "r") as f:
-    contract_info = json.load(f)
+with open(contract_info_path, "r", encoding="utf-8") as file:
+    contract_info = json.load(file)
 
 contract = w3.eth.contract(
-    address=contract_info["address"],
+    address=Web3.to_checksum_address(contract_info["address"]),
     abi=contract_info["abi"]
 )
 
 
 def check_blockchain():
-    """Check the blockchain only when a blockchain function is called."""
     if not w3.is_connected():
         raise ConnectionError(
-            "Blockchain is unavailable. Check the RPC URL and network."
+            "Ganache is not running at http://127.0.0.1:7545."
         )
 
 
 def get_account():
-    """Get an account only when a transaction is needed."""
     check_blockchain()
-
     accounts = w3.eth.accounts
 
     if not accounts:
-        raise RuntimeError("No blockchain accounts are available.")
+        raise RuntimeError("No accounts found in Ganache.")
 
     return accounts[0]
 
 
-def register_product(serial_no, manufacturer):
+def send_transaction(function_call):
+    """Send a transaction using the first Ganache account."""
     account = get_account()
 
-    tx = contract.functions.registerProduct(
-        serial_no,
-        manufacturer
-    ).transact({
-        "from": account
-    })
+    tx_hash = function_call.transact({"from": account})
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
 
-    w3.eth.wait_for_transaction_receipt(tx)
+    if receipt["status"] != 1:
+        raise RuntimeError("Blockchain transaction failed.")
 
-    return tx.hex()
+    return tx_hash.hex()
+
+
+def register_product(serial_no, manufacturer):
+    return send_transaction(
+        contract.functions.registerProduct(serial_no, manufacturer)
+    )
 
 
 def assign_seller(serial_no, seller):
-    account = get_account()
-
-    tx = contract.functions.assignSeller(
-        serial_no,
-        seller
-    ).transact({
-        "from": account
-    })
-
-    w3.eth.wait_for_transaction_receipt(tx)
-
-    return tx.hex()
+    return send_transaction(
+        contract.functions.assignSeller(serial_no, seller)
+    )
 
 
 def assign_consumer(serial_no, consumer):
-    account = get_account()
-
-    tx = contract.functions.assignConsumer(
-        serial_no,
-        consumer
-    ).transact({
-        "from": account
-    })
-
-    w3.eth.wait_for_transaction_receipt(tx)
-
-    return tx.hex()
+    return send_transaction(
+        contract.functions.assignConsumer(serial_no, consumer)
+    )
 
 
 def verify_product(serial_no):
