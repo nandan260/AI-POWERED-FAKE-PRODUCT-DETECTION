@@ -550,19 +550,22 @@ def seller_assigned_products():
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT
-        id,
-        brand,
-        product_name,
-        model_name,
-        serial_no,
-        status
-    FROM products
-    WHERE
-        current_owner_type=?
-        AND current_owner_id=?
+    SELECT DISTINCT
+        p.id,
+        p.brand,
+        p.product_name,
+        p.model_name,
+        p.serial_no,
+        p.status
+    FROM products p
+    LEFT JOIN ownership_history h ON p.id = h.product_id
+    WHERE (p.current_owner_type=? AND p.current_owner_id=?)
+       OR (h.to_owner_type=? AND h.to_owner_id=?)
+    ORDER BY p.id DESC
     """,
     (
+        "Seller",
+        seller_id,
         "Seller",
         seller_id
     ))
