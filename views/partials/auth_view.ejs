@@ -1,0 +1,238 @@
+<%- include('header', { title: pageTitle, bodyClass: 'single-screen-body' }) %>
+
+<%
+const isRegister = mode === 'register';
+const roleMeta = {
+  manufacturer: {
+    label: 'Manufacturer',
+    icon: 'factory',
+    heading: isRegister ? 'Manufacturer Sign Up' : 'Manufacturer Sign In',
+    asideTitle: 'Product Provenance',
+    nameField: 'company_name',
+    nameLabel: 'Company Name',
+    namePlaceholder: 'Acme Footwear',
+    nameIcon: 'building',
+    loginAction: '/manufacturer/login',
+    registerAction: '/manufacturer/register',
+    demoUser: 'nike123@gmail.com',
+    demoPass: 'nike1234',
+    points: [
+      { icon: 'qr', title: 'QR Code Minting' },
+      { icon: 'link', title: 'On-Chain Registry' },
+      { icon: 'users', title: 'Seller Custody' }
+    ]
+  },
+  seller: {
+    label: 'Seller',
+    icon: 'store',
+    heading: isRegister ? 'Seller Sign Up' : 'Seller Sign In',
+    asideTitle: 'Retail Custody',
+    nameField: 'shop_name',
+    nameLabel: 'Shop Name',
+    namePlaceholder: 'City Retail Store',
+    nameIcon: 'store',
+    loginAction: '/seller/login',
+    registerAction: '/seller/register',
+    demoUser: 'abc123@gmail.com',
+    demoPass: 'abc1234',
+    points: [
+      { icon: 'package', title: 'Assigned Inventory' },
+      { icon: 'user', title: 'Buyer Transfer' },
+      { icon: 'history', title: 'Audit Trail' }
+    ]
+  },
+  consumer: {
+    label: 'Consumer',
+    icon: 'user',
+    heading: isRegister ? 'Consumer Sign Up' : 'Consumer Sign In',
+    asideTitle: 'Product Verification',
+    nameField: 'full_name',
+    nameLabel: 'Full Name',
+    namePlaceholder: 'Alex Morgan',
+    nameIcon: 'user',
+    loginAction: '/consumer/login',
+    registerAction: '/consumer/register',
+    demoUser: 'nandan123@gmail.com',
+    demoPass: 'nandan1234',
+    points: [
+      { icon: 'cpu', title: 'AI Visual Check' },
+      { icon: 'shield', title: 'Blockchain Proof' },
+      { icon: 'qr', title: 'Serial Lookup' }
+    ]
+  },
+  admin: {
+    label: 'Admin',
+    icon: 'chart',
+    heading: 'Admin Sign In',
+    asideTitle: 'Platform Control',
+    loginAction: '/admin/login',
+    demoUser: 'admin',
+    demoPass: 'admin123',
+    points: [
+      { icon: 'chart', title: 'Network Totals' },
+      { icon: 'link', title: 'Ledger Audit' },
+      { icon: 'shield', title: 'Admin Access' }
+    ]
+  }
+}[role];
+%>
+
+<div class="auth-wrapper">
+  <div class="auth-shell">
+    <aside class="auth-aside">
+      <div class="auth-aside-top">
+        <div class="auth-brand-mark">
+          <%- include('icon', { name: 'shield', px: 19 }) %>
+          <span>ProductGuard</span>
+        </div>
+        <h1><%= roleMeta.asideTitle %></h1>
+
+        <ul class="auth-points">
+          <% roleMeta.points.forEach(function(pt) { %>
+            <li>
+              <div class="auth-point-icon">
+                <%- include('icon', { name: pt.icon, px: 16 }) %>
+              </div>
+              <div class="auth-point-title"><%= pt.title %></div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="auth-aside-bottom">
+        <span><%= roleMeta.label %></span>
+        <a href="/verify" class="auth-link" style="color:#ABAFB5;">Verify Serial</a>
+      </div>
+    </aside>
+
+    <section class="auth-main">
+      <% if (role !== 'admin') { %>
+        <div class="role-tabs" role="tablist" aria-label="Account role">
+          <a href="<%= isRegister ? '/manufacturer/register' : '/manufacturer/login' %>" class="role-tab <%= role === 'manufacturer' ? 'active' : '' %>">
+            <%- include('icon', { name: 'factory', px: 15 }) %>
+            <span>Manufacturer</span>
+          </a>
+          <a href="<%= isRegister ? '/seller/register' : '/seller/login' %>" class="role-tab <%= role === 'seller' ? 'active' : '' %>">
+            <%- include('icon', { name: 'store', px: 15 }) %>
+            <span>Seller</span>
+          </a>
+          <a href="<%= isRegister ? '/consumer/register' : '/consumer/login' %>" class="role-tab <%= role === 'consumer' ? 'active' : '' %>">
+            <%- include('icon', { name: 'user', px: 15 }) %>
+            <span>Consumer</span>
+          </a>
+        </div>
+      <% } %>
+
+      <div class="auth-header">
+        <h2><%= roleMeta.heading %></h2>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="auth-alert" role="alert">
+          <%- include('icon', { name: 'alert', px: 17 }) %>
+          <span><%= error %></span>
+        </div>
+      <% } %>
+
+      <form method="POST" action="<%= isRegister ? roleMeta.registerAction : roleMeta.loginAction %>" class="auth-form" id="authForm">
+        <% if (isRegister) { %>
+          <div class="field-group">
+            <label for="primaryName"><%= roleMeta.nameLabel %></label>
+            <div class="input-wrap">
+              <span class="input-icon"><%- include('icon', { name: roleMeta.nameIcon, px: 17 }) %></span>
+              <input id="primaryName" type="text" name="<%= roleMeta.nameField %>" placeholder="<%= roleMeta.namePlaceholder %>" required autocomplete="organization">
+            </div>
+          </div>
+        <% } %>
+
+        <% if (role === 'admin') { %>
+          <div class="field-group">
+            <label for="authUser">Username</label>
+            <div class="input-wrap">
+              <span class="input-icon"><%- include('icon', { name: 'user', px: 17 }) %></span>
+              <input id="authUser" type="text" name="username" placeholder="admin" required autocomplete="username">
+            </div>
+          </div>
+        <% } else { %>
+          <div class="field-group">
+            <label for="authEmail">Email</label>
+            <div class="input-wrap">
+              <span class="input-icon"><%- include('icon', { name: 'mail', px: 17 }) %></span>
+              <input id="authEmail" type="email" name="email" placeholder="name@company.com" required autocomplete="email">
+            </div>
+          </div>
+        <% } %>
+
+        <div class="field-group">
+          <label for="authPassword">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon"><%- include('icon', { name: 'lock', px: 17 }) %></span>
+            <input
+              id="authPassword"
+              type="password"
+              name="password"
+              placeholder="Password"
+              <%= isRegister ? 'minlength="6"' : '' %>
+              required
+              autocomplete="<%= isRegister ? 'new-password' : 'current-password' %>"
+            >
+            <button type="button" class="password-toggle" id="togglePasswordBtn" aria-label="Show password">
+              <span id="eyeShow"><%- include('icon', { name: 'eye', px: 17 }) %></span>
+              <span id="eyeHide" style="display:none;"><%- include('icon', { name: 'eyeOff', px: 17 }) %></span>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit">
+          <span><%= isRegister ? 'Create Account' : 'Sign In' %></span>
+          <%- include('icon', { name: 'arrowRight', px: 17 }) %>
+        </button>
+      </form>
+
+      <div class="auth-footer-bar">
+        <% if (role === 'admin') { %>
+          <a href="/manufacturer/login" class="auth-admin-link">Role Login</a>
+          <button type="button" class="demo-fill-btn" id="demoFillBtn">Fill Demo</button>
+        <% } else if (isRegister) { %>
+          <a href="<%= roleMeta.loginAction %>" class="auth-link">Sign in</a>
+        <% } else { %>
+          <a href="<%= roleMeta.registerAction %>" class="auth-link">Create account</a>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button type="button" class="demo-fill-btn" id="demoFillBtn">Fill Demo</button>
+            <a href="/admin/login" class="auth-admin-link">Admin</a>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function() {
+  const pwInput = document.getElementById("authPassword");
+  const toggleBtn = document.getElementById("togglePasswordBtn");
+  const eyeShow = document.getElementById("eyeShow");
+  const eyeHide = document.getElementById("eyeHide");
+
+  if (toggleBtn && pwInput) {
+    toggleBtn.addEventListener("click", function() {
+      const showing = pwInput.type === "text";
+      pwInput.type = showing ? "password" : "text";
+      eyeShow.style.display = showing ? "inline" : "none";
+      eyeHide.style.display = showing ? "none" : "inline";
+      toggleBtn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+    });
+  }
+
+  const demoBtn = document.getElementById("demoFillBtn");
+  if (demoBtn) {
+    demoBtn.addEventListener("click", function() {
+      const userField = document.getElementById("authEmail") || document.getElementById("authUser");
+      if (userField) userField.value = "<%= roleMeta.demoUser %>";
+      if (pwInput) pwInput.value = "<%= roleMeta.demoPass %>";
+    });
+  }
+})();
+</script>
+
+<%- include('footer') %>

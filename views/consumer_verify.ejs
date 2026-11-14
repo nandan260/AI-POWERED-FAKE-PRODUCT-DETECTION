@@ -1,0 +1,31 @@
+<%- include('partials/page_start', { title: 'Verify Product', pageHeading: 'Verify AI' }) %>
+
+<div class="register-container compact-form-wrap">
+    <div class="register-card compact-card" style="max-width:460px;">
+        <form action="/verify-image" method="POST" enctype="multipart/form-data">
+            <label for="verifySerialNo">Serial Number</label>
+            <input id="verifySerialNo" type="text" name="serial_no" placeholder="1001" required>
+
+            <label for="verifyConsumerImg">Product Image</label>
+            <div class="dropzone">
+                <input id="verifyConsumerImg" type="file" name="consumer_image" class="dropzone-input" accept="image/*" required>
+                <div class="dropzone-prompt">
+                    <span class="dropzone-icon"><%- include('partials/icon', { name: 'upload', px: 18 }) %></span>
+                    <span>Drop product photo or browse</span>
+                </div>
+                <div class="dropzone-preview" style="display:none;">
+                    <img class="dropzone-thumb" src="" alt="Preview">
+                    <span class="dropzone-filename"></span>
+                    <button type="button" class="dropzone-clear">Remove</button>
+                </div>
+            </div>
+
+            <button type="submit">
+                <%- include('partials/icon', { name: 'cpu', px: 17 }) %>
+                <span>Verify</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>

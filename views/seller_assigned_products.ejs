@@ -1,0 +1,53 @@
+<%- include('partials/page_start', { title: 'Inventory', pageHeading: 'Inventory' }) %>
+
+<div class="panel dash-table-panel" style="height:100%;">
+    <div class="panel-head">
+        <div class="panel-title">Assigned Products</div>
+    </div>
+    <div class="ws-table-wrap">
+        <table class="ws-table">
+            <thead>
+                <tr>
+                    <th data-sort>Brand <%- include('partials/icon', { name: 'sort', px: 12 }) %></th>
+                    <th data-sort>Product <%- include('partials/icon', { name: 'sort', px: 12 }) %></th>
+                    <th data-sort>Model <%- include('partials/icon', { name: 'sort', px: 12 }) %></th>
+                    <th data-sort>Serial <%- include('partials/icon', { name: 'sort', px: 12 }) %></th>
+                    <th data-sort>Status <%- include('partials/icon', { name: 'sort', px: 12 }) %></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% products.forEach(function(product) { %>
+                <tr>
+                    <td><%= product.brand %></td>
+                    <td>
+                        <div class="product-cell">
+                            <img src="/static/product_images/<%= product.originalImage %>" class="row-thumb" alt="<%= product.productName %>">
+                            <span><%= product.productName %></span>
+                        </div>
+                    </td>
+                    <td><%= product.modelName %></td>
+                    <td class="mono-cell">
+                        <span class="mono-copy">
+                            <span><%= product.serialNo %></span>
+                            <button type="button" class="copy-btn" data-copy="<%= product.serialNo %>" title="Copy serial" aria-label="Copy serial">
+                                <%- include('partials/icon', { name: 'copy', px: 12 }) %>
+                            </button>
+                        </span>
+                    </td>
+                    <td><%- include('partials/status_badge', { label: product.status, ownerType: product.currentOwnerType }) %></td>
+                    <td><a href="/history/<%= product.serialNo %>" class="row-link">History</a></td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <% if (products.length === 0) { %>
+        <div class="empty-state-box">
+            <p>No assigned inventory yet.</p>
+            <a href="/verify"><button type="button" class="ws-primary-btn">Lookup Serial</button></a>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>

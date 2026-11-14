@@ -1,0 +1,70 @@
+<%- include('partials/page_start', { title: 'Verification Result', pageHeading: 'AI Report' }) %>
+
+<%
+const confPct = Math.max(0, Math.min(100, Number(confidence_percent) || 0));
+const simPct = Math.max(0, Math.min(100, Number(similarity_percent) || 0));
+const ringR = 30;
+const ringC = +(2 * Math.PI * ringR).toFixed(2);
+const confOffset = +(ringC * (1 - confPct / 100)).toFixed(2);
+const simOffset = +(ringC * (1 - simPct / 100)).toFixed(2);
+%>
+<div class="panel ai-report-panel">
+    <div class="verify-container ai-report-grid">
+        <div class="ai-compare-photos">
+            <div class="ai-photo-card">
+                <span class="ai-photo-tag">Reference</span>
+                <img src="/static/product_images/<%= product.originalImage %>" class="verify-image ai-compare-img" alt="Reference">
+            </div>
+            <div class="ai-photo-card">
+                <span class="ai-photo-tag">Uploaded</span>
+                <img src="/static/uploaded_images/<%= uploaded_image %>" class="verify-image ai-compare-img" alt="Uploaded">
+            </div>
+        </div>
+
+        <div class="ai-report-details">
+            <table class="details-table" style="margin-bottom:14px;">
+                <tr><td>Result</td><td><%- include('partials/status_badge', { label: final_result }) %></td></tr>
+                <tr><td>Prediction</td><td><%= prediction.charAt(0).toUpperCase() + prediction.slice(1) %></td></tr>
+                <tr><td>Ledger</td><td><%- include('partials/status_badge', { label: blockchain_verified ? 'Verified' : 'Not Verified' }) %> · <%= manufacturer_name %></td></tr>
+                <tr><td>Serial</td><td class="mono-cell"><%= product.serialNo %></td></tr>
+            </table>
+
+            <div class="ai-gauges">
+                <div class="ai-gauge-card">
+                    <div class="ai-ring-wrap" role="progressbar" aria-label="AI Confidence" aria-valuenow="<%= confPct %>" aria-valuemin="0" aria-valuemax="100">
+                        <svg class="ai-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                            <circle class="ai-ring-track" cx="38" cy="38" r="<%= ringR %>"/>
+                            <circle class="ai-ring-fill ai-ring-conf" cx="38" cy="38" r="<%= ringR %>" stroke-dasharray="<%= ringC %>" stroke-dashoffset="<%= confOffset %>"/>
+                        </svg>
+                        <span class="ai-ring-val"><%= confPct %>%</span>
+                    </div>
+                    <div class="ai-gauge-meta">
+                        <span class="ai-gauge-label">AI Confidence</span>
+                        <span class="ai-gauge-sub">Model match</span>
+                    </div>
+                </div>
+
+                <div class="ai-gauge-card">
+                    <div class="ai-ring-wrap" role="progressbar" aria-label="Visual Similarity" aria-valuenow="<%= simPct %>" aria-valuemin="0" aria-valuemax="100">
+                        <svg class="ai-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                            <circle class="ai-ring-track" cx="38" cy="38" r="<%= ringR %>"/>
+                            <circle class="ai-ring-fill ai-ring-sim" cx="38" cy="38" r="<%= ringR %>" stroke-dasharray="<%= ringC %>" stroke-dashoffset="<%= simOffset %>"/>
+                        </svg>
+                        <span class="ai-ring-val"><%= simPct %>%</span>
+                    </div>
+                    <div class="ai-gauge-meta">
+                        <span class="ai-gauge-label">Visual Similarity</span>
+                        <span class="ai-gauge-sub">Image delta</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row-actions" style="margin-top:14px;">
+                <a href="/history/<%= product.serialNo %>"><button type="button">History</button></a>
+                <a href="/consumer/dashboard"><button type="button" class="demo-fill-btn">Dashboard</button></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>

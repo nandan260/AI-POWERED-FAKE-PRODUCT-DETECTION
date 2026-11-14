@@ -1,0 +1,6 @@
+{
+  "name": "AI Fake Product Detection",
+  "description": "Verify product authenticity using Artificial Intelligence, Blockchain Technology and QR Code Verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

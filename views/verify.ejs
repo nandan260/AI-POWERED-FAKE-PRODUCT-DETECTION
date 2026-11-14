@@ -1,0 +1,16 @@
+<%- include('partials/page_start', { title: 'Serial Lookup', pageHeading: 'Lookup' }) %>
+
+<div class="register-container compact-form-wrap">
+    <div class="register-card compact-card" style="max-width:460px;">
+        <form action="/verify" method="GET" onsubmit="event.preventDefault(); const s = document.getElementById('serialLookup').value.trim(); if (s) { const u = '/verify/' + encodeURIComponent(s); window.location.href = window.pgWithAuth ? window.pgWithAuth(u) : u; }">
+            <label for="serialLookup">Serial Number</label>
+            <input type="text" id="serialLookup" placeholder="1001" required>
+            <button type="submit">
+                <%- include('partials/icon', { name: 'search', px: 16 }) %>
+                <span>Verify</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>

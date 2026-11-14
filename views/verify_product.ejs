@@ -1,0 +1,44 @@
+<%- include('partials/page_start', { title: 'Verify Product', pageHeading: 'Verify #' + product.serialNo }) %>
+
+<div class="verify-container panel verify-panel">
+    <div class="verify-left">
+        <img src="/static/product_images/<%= product.originalImage %>" class="verify-image" alt="<%= product.productName %>">
+    </div>
+
+    <div class="verify-right">
+        <table class="details-table">
+            <tr><td>Brand</td><td><%= product.brand %></td></tr>
+            <tr><td>Product</td><td><%= product.productName %></td></tr>
+            <tr><td>Model</td><td><%= product.modelName %></td></tr>
+            <tr><td>Serial</td><td class="mono-cell"><%= product.serialNo %></td></tr>
+            <tr><td>Status</td><td><%- include('partials/status_badge', { label: product.status, ownerType: product.currentOwnerType }) %></td></tr>
+            <tr><td>Ledger</td><td><%- include('partials/status_badge', { label: blockchain.exists ? 'Verified' : 'Not Found' }) %></td></tr>
+        </table>
+
+        <% if (logged_in) { %>
+            <form action="/verify-image" method="POST" enctype="multipart/form-data" style="margin-top:12px;">
+                <input type="hidden" name="serial_no" value="<%= product.serialNo %>">
+                <div class="dropzone" style="margin-bottom:12px;">
+                    <input type="file" name="consumer_image" class="dropzone-input" accept="image/*" required>
+                    <div class="dropzone-prompt">
+                        <span class="dropzone-icon"><%- include('partials/icon', { name: 'upload', px: 18 }) %></span>
+                        <span>Drop photo to verify</span>
+                    </div>
+                    <div class="dropzone-preview" style="display:none;">
+                        <img class="dropzone-thumb" src="" alt="Preview">
+                        <span class="dropzone-filename"></span>
+                        <button type="button" class="dropzone-clear">Remove</button>
+                    </div>
+                </div>
+                <button type="submit">
+                    <%- include('partials/icon', { name: 'cpu', px: 17 }) %>
+                    <span>Verify with AI</span>
+                </button>
+            </form>
+        <% } else { %>
+            <a href="/consumer/login"><button type="button">Sign in to Verify</button></a>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>

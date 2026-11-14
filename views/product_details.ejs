@@ -1,0 +1,23 @@
+<%- include('partials/page_start', { title: 'Product Details', pageHeading: 'Details' }) %>
+
+<div class="product-details">
+    <div class="product-image">
+        <img src="/static/product_images/<%= product.originalImage %>" alt="<%= product.productName %>">
+    </div>
+
+    <div class="product-data">
+        <h1><%= product.productName %></h1>
+        <h3><%= product.brand %></h3>
+        <p><b>Model:</b> <%= product.modelName %></p>
+        <p><b>Serial:</b> <span class="mono-cell"><%= product.serialNo %></span></p>
+        <p><b>Status:</b> <%- include('partials/status_badge', { label: product.status, ownerType: product.currentOwnerType }) %></p>
+        <% if (product.qrCode) { %>
+            <img src="/static/qr_codes/<%= product.qrCode %>" class="qr-image" alt="QR Code">
+        <% } %>
+        <div style="margin-top:16px;">
+            <a href="/history/<%= product.serialNo %>"><button type="button">History</button></a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>
