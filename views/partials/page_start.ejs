@@ -1,0 +1,5 @@
+<% if (typeof workspace !== 'undefined' && workspace) { %>
+  <%- include('workspace_start', { title: title, pageHeading: typeof pageHeading !== 'undefined' ? pageHeading : title, workspace: workspace }) %>
+<% } else { %>
+  <%- include('header', { title: title }) %>
+<% } %>

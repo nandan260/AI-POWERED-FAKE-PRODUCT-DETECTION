@@ -1,0 +1,381 @@
+<%
+const d = dash;
+const initial = (d.shopName || '?').trim().charAt(0).toUpperCase();
+const views = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'inventory', label: 'Inventory' },
+  { key: 'assign', label: 'Assign Buyer' },
+  { key: 'ledger', label: 'Ledger' }
+];
+const stageInfo = {
+  Manufacturer: { label: 'Registered', cls: '' },
+  Seller: { label: 'In stock', cls: 'is-stock' },
+  Consumer: { label: 'With consumer', cls: 'is-done' }
+};
+const total = d.products.length;
+const countStage = function (s) { return d.products.filter(function (p) { return p.stage === s; }).length; };
+const chain = [
+  { label: 'Registered', count: countStage('Manufacturer') },
+  { label: 'With seller', count: countStage('Seller') },
+  { label: 'With consumer', count: countStage('Consumer') }
+];
+const assignable = d.products.filter(function (p) { return p.canAssign; });
+const shortHash = function (h) { return h ? h.slice(0, 10) + '…' + h.slice(-6) : '—'; };
+const searchKey = function (p) { return (p.brand + ' ' + p.productName + ' ' + p.modelName + ' ' + p.serialNo).toLowerCase(); };
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seller · <%= d.shopName %> · ProductGuard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/pg-v2.css">
+    <style>
+        .sd-shell { min-height: 100vh; display: flex; background: #fff; }
+
+        .sd-side {
+            width: 232px; flex-shrink: 0; display: flex; flex-direction: column;
+            padding: 28px 16px 16px; border-right: 1px solid var(--v2-wash);
+            position: sticky; top: 0; height: 100vh; overflow-y: auto;
+        }
+        .sd-brand { display: flex; align-items: center; gap: 8px; padding: 0 12px 28px; font-weight: 700; font-size: 15px; }
+        .sd-nav { display: flex; flex-direction: column; gap: 2px; }
+        .sd-nav button {
+            height: 40px; padding: 0 14px; border: 0; border-radius: 999px; text-align: left;
+            font-size: 14px; font-weight: 500; cursor: pointer; background: transparent; color: var(--v2-muted);
+            transition: background .15s, color .15s;
+        }
+        .sd-nav button:hover { color: var(--v2-ink); }
+        .sd-nav button[aria-selected="true"] { background: var(--v2-wash); color: var(--v2-ink); font-weight: 600; }
+        .sd-nav button:focus-visible { outline: 2px solid var(--v2-ink); outline-offset: 2px; }
+        .sd-me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-top: 1px solid var(--v2-wash); }
+        .sd-avatar {
+            width: 32px; height: 32px; flex-shrink: 0; border-radius: 999px; background: var(--v2-ink); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;
+        }
+        .sd-me-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .sd-me-meta strong { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sd-me-meta span { font-size: 12px; color: var(--v2-muted); }
+        .sd-me a { font-size: 12px; color: var(--v2-muted); white-space: nowrap; }
+
+        .sd-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 28px 40px 40px; gap: 32px; }
+        .sd-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .sd-head h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; }
+        .sd-head h1 span { color: var(--v2-muted); }
+        .sd-head .v2-btn { height: 40px; padding: 0 20px; }
+
+        .sd-view { display: flex; flex-direction: column; gap: 32px; }
+        .sd-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .sd-stat { padding: 20px 22px; border: 1px solid var(--v2-mist); border-radius: 16px; display: flex; flex-direction: column; gap: 14px; }
+        .sd-stat span { font-size: 13px; color: var(--v2-muted); }
+        .sd-stat strong { font-size: 36px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+
+        .sd-box { padding: 22px; border: 1px solid var(--v2-mist); border-radius: 16px; display: flex; flex-direction: column; gap: 18px; }
+        .sd-box-title { font-size: 15px; font-weight: 600; }
+        .sd-chain { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+        .sd-chain-row { display: flex; flex-direction: column; gap: 10px; }
+        .sd-chain-top { display: flex; justify-content: space-between; font-size: 13px; }
+        .sd-chain-top strong { font-weight: 600; }
+        .sd-chain-top span { color: var(--v2-muted); font-variant-numeric: tabular-nums; }
+        .sd-track { height: 6px; border-radius: 999px; background: var(--v2-wash); overflow: hidden; }
+        .sd-track div { height: 100%; border-radius: 999px; background: var(--v2-ink); }
+
+        .sd-tools { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .sd-filters { display: flex; gap: 4px; padding: 4px; background: var(--v2-wash); border-radius: 999px; flex-wrap: wrap; }
+        .sd-filters button {
+            height: 32px; padding: 0 14px; border: 0; border-radius: 999px; font-size: 13px; font-weight: 600;
+            cursor: pointer; background: transparent; color: var(--v2-muted);
+        }
+        .sd-filters button[aria-pressed="true"] { background: #fff; color: var(--v2-ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .08); }
+        .sd-input {
+            height: 40px; width: min(100%, 260px); padding: 0 18px; border: 1px solid var(--v2-mist); border-radius: 999px;
+            font: inherit; font-size: 14px; outline: 0; color: var(--v2-ink); background: #fff;
+        }
+        .sd-input:focus { border-color: var(--v2-ink); }
+        .sd-input.is-end { align-self: flex-end; }
+
+        .sd-table { border: 1px solid var(--v2-mist); border-radius: 16px; overflow-x: auto; }
+        .sd-table-inner { min-width: 880px; }
+        .sd-tr {
+            display: grid; gap: 16px; align-items: center; padding: 14px 20px;
+            border-bottom: 1px solid var(--v2-wash); font-size: 14px; transition: background .15s;
+        }
+        .sd-tr:last-child { border-bottom: 0; }
+        .sd-tr:not(.sd-th):hover { background: var(--v2-panel); }
+        .sd-th { padding: 12px 20px; font-size: 12px; color: var(--v2-muted); font-weight: 600; }
+        .sd-cols-overview { grid-template-columns: minmax(220px, 2fr) minmax(110px, 1fr) minmax(100px, 1fr) minmax(140px, 1fr) 160px; }
+        .sd-cols-inventory { grid-template-columns: 90px minmax(200px, 1.6fr) minmax(120px, 1fr) minmax(110px, 1fr) minmax(140px, 1fr) 100px; }
+        .sd-cols-ledger { grid-template-columns: 100px 1.2fr 1fr 1fr 1.3fr 1.3fr; }
+        .sd-table-ledger .sd-table-inner { min-width: 860px; }
+
+        .sd-prod { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .sd-prod img {
+            width: 48px; height: 48px; flex-shrink: 0; border-radius: 12px; object-fit: cover; background: #fff;
+            border: 1px solid var(--v2-mist); box-shadow: 0 4px 10px -6px rgba(47, 65, 86, .35);
+        }
+        .sd-prod-text { display: flex; flex-direction: column; min-width: 0; }
+        .sd-prod-text strong { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sd-prod-text span { font-size: 12px; color: var(--v2-muted); }
+        .sd-serial {
+            justify-self: start; padding: 4px 10px; border-radius: 8px; background: var(--v2-wash);
+            font-family: var(--v2-mono); font-size: 12px; color: var(--v2-ink); letter-spacing: .02em;
+        }
+        .sd-muted { color: var(--v2-muted); }
+        .sd-badge {
+            justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px;
+            border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap;
+            background: #fff; color: var(--v2-ink); border: 1px solid var(--v2-mist);
+        }
+        .sd-badge i { width: 6px; height: 6px; border-radius: 999px; background: var(--v2-muted); box-shadow: 0 0 0 3px var(--v2-wash); }
+        .sd-badge.is-done, .sd-badge.is-stock { background: var(--v2-wash); }
+        .sd-badge.is-done i { background: var(--v2-ink); box-shadow: 0 0 0 3px var(--v2-mist); }
+        .sd-badge.is-stock i { background: #3E8E6A; box-shadow: 0 0 0 3px #D7EDE2; }
+        .sd-row-actions { display: flex; gap: 14px; justify-content: flex-end; align-items: center; font-size: 13px; font-weight: 600; }
+        .sd-pill {
+            height: 32px; padding: 0 14px; display: inline-flex; align-items: center; border: 1px solid var(--v2-mist);
+            border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--v2-ink); background: #fff; transition: all .2s;
+        }
+        .sd-pill:hover { background: var(--v2-ink); color: #fff; border-color: var(--v2-ink); }
+        .sd-link { border: 0; padding: 0; background: none; cursor: pointer; color: var(--v2-ink); font-weight: 600; }
+        .sd-link:hover { color: var(--v2-muted); }
+        .sd-mono { font-family: var(--v2-mono); font-size: 12px; color: var(--v2-muted); }
+
+        .sd-form { width: min(100%, 440px); display: flex; flex-direction: column; gap: 14px; }
+        .sd-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+        .sd-select {
+            height: 48px; padding: 0 20px; border: 1px solid var(--v2-mist); border-radius: 999px;
+            font: inherit; font-size: 14px; outline: 0; background: #fff; color: var(--v2-ink);
+        }
+        .sd-select:focus { border-color: var(--v2-ink); }
+        .sd-form .v2-btn { height: 48px; margin-top: 4px; }
+
+        @media (max-width: 860px) {
+            .sd-shell { flex-direction: column; }
+            .sd-side { position: static; height: auto; width: auto; padding: 16px; border-right: 0; border-bottom: 1px solid var(--v2-wash); gap: 12px; }
+            .sd-brand { padding: 0 12px; }
+            .sd-nav { flex-direction: row; flex-wrap: wrap; }
+            .sd-me { margin-top: 0; }
+            .sd-main { padding: 20px 16px 32px; gap: 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="sd-shell">
+    <aside class="sd-side">
+        <a href="/" class="sd-brand">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#2F4156" aria-hidden="true"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+            ProductGuard
+        </a>
+        <div class="sd-nav" role="tablist" aria-label="Seller views">
+            <% views.forEach(function (v, i) { %>
+            <button type="button" role="tab" id="sdTab-<%= v.key %>" aria-controls="sdView-<%= v.key %>" data-view="<%= v.key %>" data-label="<%= v.label %>" aria-selected="<%= i === 0 ? 'true' : 'false' %>"><%= v.label %></button>
+            <% }); %>
+        </div>
+        <div class="sd-me">
+            <div class="sd-avatar" aria-hidden="true"><%= initial %></div>
+            <div class="sd-me-meta"><strong><%= d.shopName %></strong><span>Seller</span></div>
+            <a href="/seller/logout">Log out</a>
+        </div>
+    </aside>
+
+    <main class="sd-main">
+        <header class="sd-head">
+            <h1><span>Seller</span> <b id="sdTitle" style="font-weight:600">Overview</b></h1>
+            <button type="button" class="v2-btn" data-goto="assign">Assign buyer</button>
+        </header>
+
+        <!-- Overview -->
+        <section class="sd-view" id="sdView-overview" role="tabpanel" aria-labelledby="sdTab-overview">
+            <div class="sd-stats">
+                <div class="sd-stat"><span>Total handled</span><strong><%= d.stats.total %></strong></div>
+                <div class="sd-stat"><span>In stock</span><strong><%= d.stats.inStock %></strong></div>
+                <div class="sd-stat"><span>Verified genuine</span><strong><%= d.stats.genuine %></strong></div>
+                <div class="sd-stat"><span>Flagged</span><strong><%= d.stats.flagged %></strong></div>
+                <div class="sd-stat"><span>Seller txs</span><strong><%= d.stats.txCount %></strong></div>
+            </div>
+
+            <div class="sd-box">
+                <span class="sd-box-title">Supply chain</span>
+                <div class="sd-chain">
+                    <% chain.forEach(function (c) { %>
+                    <div class="sd-chain-row">
+                        <div class="sd-chain-top"><strong><%= c.label %></strong><span><%= c.count %></span></div>
+                        <div class="sd-track"><div style="width:<%= total ? Math.round(c.count / total * 100) : 0 %>%"></div></div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+                <div class="sd-tools">
+                    <div class="sd-filters" role="group" aria-label="Filter by stage">
+                        <% [['all', 'All'], ['Manufacturer', 'Registered'], ['Seller', 'In stock'], ['Consumer', 'Consumer']].forEach(function (f, i) { %>
+                        <button type="button" data-filter="<%= f[0] %>" aria-pressed="<%= i === 0 ? 'true' : 'false' %>"><%= f[1] %></button>
+                        <% }); %>
+                    </div>
+                    <input class="sd-input" type="search" data-search-for="sdOverviewRows" placeholder="Search products" aria-label="Search products">
+                </div>
+                <div class="sd-table">
+                    <div class="sd-table-inner" id="sdOverviewRows">
+                        <div class="sd-tr sd-th sd-cols-overview"><span>Product</span><span>Serial</span><span>Stage</span><span>Status</span><span></span></div>
+                        <% d.products.forEach(function (p) { const st = stageInfo[p.stage] || stageInfo.Manufacturer; %>
+                        <div class="sd-tr sd-cols-overview" data-row data-stage="<%= p.stage %>" data-search="<%= searchKey(p) %>">
+                            <div class="sd-prod">
+                                <img src="/static/product_images/<%= p.image %>" alt="" loading="lazy">
+                                <div class="sd-prod-text"><strong><%= p.productName %></strong><span><%= p.brand %> · <%= p.modelName %></span></div>
+                            </div>
+                            <span class="sd-serial">#<%= p.serialNo %></span>
+                            <span class="sd-muted"><%= p.stage %></span>
+                            <span class="sd-badge <%= st.cls %>"><i></i><%= st.label %></span>
+                            <div class="sd-row-actions">
+                                <a href="/history/<%= encodeURIComponent(p.serialNo) %>" class="sd-pill">History</a>
+                                <% if (p.canAssign) { %><button type="button" class="sd-link" data-goto="assign" data-product="<%= p.id %>">Assign</button><% } %>
+                            </div>
+                        </div>
+                        <% }); %>
+                        <p class="v2-empty" data-empty <%= total ? 'hidden' : '' %>><%= total ? 'No products match.' : 'No products assigned to you yet.' %></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inventory -->
+        <section class="sd-view" id="sdView-inventory" role="tabpanel" aria-labelledby="sdTab-inventory" hidden>
+            <input class="sd-input is-end" type="search" data-search-for="sdInventoryRows" placeholder="Search inventory" aria-label="Search inventory">
+            <div class="sd-table">
+                <div class="sd-table-inner" id="sdInventoryRows">
+                    <div class="sd-tr sd-th sd-cols-inventory"><span>Brand</span><span>Product</span><span>Model</span><span>Serial</span><span>Status</span><span></span></div>
+                    <% d.products.forEach(function (p) { const st = stageInfo[p.stage] || stageInfo.Manufacturer; %>
+                    <div class="sd-tr sd-cols-inventory" data-row data-search="<%= searchKey(p) %>">
+                        <span class="sd-muted"><%= p.brand %></span>
+                        <div class="sd-prod"><img src="/static/product_images/<%= p.image %>" alt="" loading="lazy"><div class="sd-prod-text"><strong><%= p.productName %></strong></div></div>
+                        <span style="white-space:nowrap"><%= p.modelName %></span>
+                        <span class="sd-serial">#<%= p.serialNo %></span>
+                        <span class="sd-badge <%= st.cls %>"><i></i><%= st.label %></span>
+                        <div style="justify-self:end"><a href="/history/<%= encodeURIComponent(p.serialNo) %>" class="sd-pill">History</a></div>
+                    </div>
+                    <% }); %>
+                    <p class="v2-empty" data-empty <%= total ? 'hidden' : '' %>><%= total ? 'No products match.' : 'No products assigned to you yet.' %></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Assign Buyer -->
+        <section class="sd-view" id="sdView-assign" role="tabpanel" aria-labelledby="sdTab-assign" hidden>
+            <% if (assignable.length) { %>
+            <form class="sd-form" method="POST" action="/seller/assign-product-consumer">
+                <input type="hidden" name="return_to" value="dashboard">
+                <label>Product
+                    <select class="sd-select" name="product_id" id="sdAssignProduct" required>
+                        <% assignable.forEach(function (p) { %>
+                        <option value="<%= p.id %>"><%= p.productName %> · #<%= p.serialNo %></option>
+                        <% }); %>
+                    </select>
+                </label>
+                <label>Buyer
+                    <select class="sd-select" name="consumer_id" required>
+                        <option value="">Select consumer</option>
+                        <% d.consumers.forEach(function (c) { %>
+                        <option value="<%= c.id %>"><%= c.name %></option>
+                        <% }); %>
+                    </select>
+                </label>
+                <button type="submit" class="v2-btn">Assign to buyer</button>
+            </form>
+            <% } else { %>
+            <p class="v2-empty" style="text-align:left;padding:0">Nothing in stock to assign. Products appear here once a manufacturer assigns them to you.</p>
+            <% } %>
+        </section>
+
+        <!-- Ledger -->
+        <section class="sd-view" id="sdView-ledger" role="tabpanel" aria-labelledby="sdTab-ledger" hidden>
+            <input class="sd-input is-end" type="search" data-search-for="sdLedgerRows" placeholder="Lookup serial" aria-label="Lookup serial">
+            <div class="sd-table sd-table-ledger">
+                <div class="sd-table-inner" id="sdLedgerRows">
+                    <div class="sd-tr sd-th sd-cols-ledger"><span>Serial</span><span>Product</span><span>From</span><span>To</span><span>Date</span><span>Hash</span></div>
+                    <% d.ledger.forEach(function (l) { %>
+                    <div class="sd-tr sd-cols-ledger" data-row data-search="<%= (l.serialNo + ' ' + l.product).toLowerCase() %>">
+                        <span class="v2-mono" style="font-size:13px"><%= l.serialNo %></span>
+                        <span><%= l.product %></span>
+                        <span class="sd-muted"><%= l.from %></span>
+                        <span class="sd-muted"><%= l.to %></span>
+                        <span class="sd-mono"><%= l.date %></span>
+                        <span class="sd-mono" title="<%= l.hash %>"><%= shortHash(l.hash) %></span>
+                    </div>
+                    <% }); %>
+                    <p class="v2-empty" data-empty <%= d.ledger.length ? 'hidden' : '' %>><%= d.ledger.length ? 'No transfers match.' : 'No custody transfers yet.' %></p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+(function () {
+    var tabs = document.querySelectorAll('.sd-nav [role="tab"]');
+    var title = document.getElementById('sdTitle');
+
+    function show(view, push) {
+        var found = false;
+        tabs.forEach(function (t) {
+            var on = t.getAttribute('data-view') === view;
+            if (on) { found = true; title.textContent = t.getAttribute('data-label'); }
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+            document.getElementById('sdView-' + t.getAttribute('data-view')).hidden = !on;
+        });
+        if (!found) return show('overview', push);
+        if (push) {
+            try {
+                var u = new URL(window.location.href);
+                if (view === 'overview') u.searchParams.delete('view'); else u.searchParams.set('view', view);
+                window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+            } catch (e) {}
+        }
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.getAttribute('data-view'), true); }); });
+    document.querySelectorAll('[data-goto]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            show(b.getAttribute('data-goto'), true);
+            var pid = b.getAttribute('data-product');
+            var sel = document.getElementById('sdAssignProduct');
+            if (pid && sel) sel.value = pid;
+        });
+    });
+    try { show(new URLSearchParams(window.location.search).get('view') || 'overview', false); } catch (e) {}
+
+    // Row filtering: stage pills (overview only) plus per-table search boxes.
+    var stage = 'all';
+    function apply(boxId) {
+        var box = document.getElementById(boxId);
+        var input = document.querySelector('[data-search-for="' + boxId + '"]');
+        var q = input ? input.value.trim().toLowerCase() : '';
+        var rows = box.querySelectorAll('[data-row]');
+        var shown = 0;
+        rows.forEach(function (r) {
+            var okStage = boxId !== 'sdOverviewRows' || stage === 'all' || r.getAttribute('data-stage') === stage;
+            var okQuery = !q || r.getAttribute('data-search').indexOf(q) !== -1;
+            r.hidden = !(okStage && okQuery);
+            if (!r.hidden) shown++;
+        });
+        var empty = box.querySelector('[data-empty]');
+        if (empty && rows.length) empty.hidden = shown > 0;
+    }
+    document.querySelectorAll('[data-search-for]').forEach(function (input) {
+        input.addEventListener('input', function () { apply(input.getAttribute('data-search-for')); });
+    });
+    document.querySelectorAll('[data-filter]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            stage = b.getAttribute('data-filter');
+            document.querySelectorAll('[data-filter]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+            apply('sdOverviewRows');
+        });
+    });
+})();
+</script>
+
+<%# The shared footer partial starts with </main> and adds the auth-token and toast scripts. %>
+<main hidden>
+<%- include('partials/footer') %>

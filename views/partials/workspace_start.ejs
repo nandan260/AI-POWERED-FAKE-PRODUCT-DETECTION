@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title><%= typeof title !== 'undefined' ? title : 'ProductGuard' %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/pg-v2.css">
+    <link rel="stylesheet" href="/static/pg-v2-theme.css">
+</head>
+<%
+// Manufacturer and admin use the panelled sidebar; seller and consumer use the flat one, matching their dashboards.
+const flat = workspace.role === 'seller' || workspace.role === 'consumer';
+const isActive = function (href) {
+  const base = href.split('?')[0];
+  return href.indexOf('?') === -1 ? workspace.activePath === base : false;
+};
+%>
+<body class="ws-body<%= flat ? ' ws-v2-flat' : '' %>">
+    <div id="loading">
+        <div class="loader"></div>
+        <h2>Verifying...</h2>
+    </div>
+
+    <div class="ws-overlay" id="wsOverlay"></div>
+
+    <div class="ws-shell" id="wsShell">
+        <aside class="ws-sidebar" id="wsSidebar" aria-label="Workspace navigation">
+            <div class="ws-sidebar-top">
+                <div class="ws-brand-row">
+                    <a href="/" class="ws-brand" title="ProductGuard">
+                        <span class="ws-brand-badge"><%- include('icon', { name: 'shield', px: 17 }) %></span>
+                        <span class="ws-brand-text">ProductGuard</span>
+                    </a>
+                    <button type="button" class="ws-drawer-close" id="wsDrawerClose" aria-label="Close menu">
+                        <%- include('icon', { name: 'x', px: 17 }) %>
+                    </button>
+                </div>
+
+                <nav class="ws-nav" aria-label="Menu">
+                    <span class="ws-group-label">MENU</span>
+                    <% workspace.links.forEach(function(link) { %>
+                        <a href="<%= link.href %>" title="<%= link.label %>" class="ws-nav-link <%= isActive(link.href) ? 'active' : '' %>" <%- isActive(link.href) ? 'aria-current="page"' : '' %>>
+                            <span class="ws-nav-icon"><%- include('icon', { name: link.icon, px: 18 }) %></span>
+                            <span class="ws-nav-text"><%= link.label %></span>
+                        </a>
+                    <% }) %>
+                </nav>
+            </div>
+
+            <div class="ws-sidebar-footer">
+                <div class="ws-account-row">
+                    <div class="ws-account-info">
+                        <div class="ws-avatar" title="<%= workspace.accountName %>"><%= workspace.initials %></div>
+                        <div class="ws-account-meta">
+                            <div class="ws-account-name"><%= workspace.accountName %></div>
+                            <div class="ws-account-role"><%= workspace.roleLabel %></div>
+                        </div>
+                    </div>
+                    <a href="<%= workspace.logoutHref %>" class="ws-logout-icon-btn" title="Sign Out" aria-label="Sign Out">
+                        <%- include('icon', { name: 'logout', px: 16 }) %>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="ws-content-wrap">
+            <header class="ws-topbar">
+                <div class="ws-topbar-left">
+                    <button type="button" class="ws-menu-btn" id="wsMenuBtn" aria-label="Menu">
+                        <%- include('icon', { name: 'menu', px: 18 }) %>
+                    </button>
+                    <div class="ws-breadcrumb">
+                        <span class="ws-crumb-role"><%= workspace.roleLabel %></span>
+                        <span class="ws-crumb-role ws-crumb-sep">/</span>
+                        <strong><%= typeof pageHeading !== 'undefined' ? pageHeading : title %></strong>
+                    </div>
+                </div>
+
+                <% if (workspace.primaryAction) { %>
+                    <div class="ws-topbar-right">
+                        <a href="<%= workspace.primaryAction.href %>" class="ws-primary-btn"><%= workspace.primaryAction.label %></a>
+                    </div>
+                <% } %>
+            </header>
+
+            <main class="ws-main <%= typeof isDashboard !== 'undefined' && isDashboard ? 'ws-dash-main' : 'ws-sub-main' %>">

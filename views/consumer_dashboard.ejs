@@ -1,0 +1,412 @@
+<%
+const d = dash;
+const initial = (d.fullName || '?').trim().charAt(0).toUpperCase();
+const views = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'products', label: 'My Products' },
+  { key: 'verify', label: 'Verify AI' },
+  { key: 'lookup', label: 'Lookup' }
+];
+const resultInfo = {
+  genuine: { label: 'Genuine', cls: 'is-good' },
+  flagged: { label: 'Flagged', cls: 'is-bad' },
+  unchecked: { label: 'Not verified', cls: '' }
+};
+const owned = d.products.length;
+const countResult = function (r) { return d.products.filter(function (p) { return p.result === r; }).length; };
+const coverage = [
+  { label: 'Verified genuine', count: countResult('genuine') },
+  { label: 'Flagged', count: countResult('flagged') },
+  { label: 'Not verified yet', count: countResult('unchecked') }
+];
+const searchKey = function (p) { return (p.brand + ' ' + p.productName + ' ' + p.modelName + ' ' + p.serialNo).toLowerCase(); };
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Consumer · <%= d.fullName %> · ProductGuard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/pg-v2.css">
+    <style>
+        .cd-shell { min-height: 100vh; display: flex; background: #fff; }
+
+        .cd-side {
+            width: 232px; flex-shrink: 0; display: flex; flex-direction: column;
+            padding: 28px 16px 16px; border-right: 1px solid var(--v2-wash);
+            position: sticky; top: 0; height: 100vh; overflow-y: auto;
+        }
+        .cd-brand { display: flex; align-items: center; gap: 8px; padding: 0 12px 28px; font-weight: 700; font-size: 15px; }
+        .cd-nav { display: flex; flex-direction: column; gap: 2px; }
+        .cd-nav button {
+            height: 40px; padding: 0 14px; border: 0; border-radius: 999px; text-align: left;
+            font-size: 14px; font-weight: 500; cursor: pointer; background: transparent; color: var(--v2-muted);
+            transition: background .15s, color .15s;
+        }
+        .cd-nav button:hover { color: var(--v2-ink); }
+        .cd-nav button[aria-selected="true"] { background: var(--v2-wash); color: var(--v2-ink); font-weight: 600; }
+        .cd-nav button:focus-visible { outline: 2px solid var(--v2-ink); outline-offset: 2px; }
+        .cd-me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-top: 1px solid var(--v2-wash); }
+        .cd-avatar {
+            width: 32px; height: 32px; flex-shrink: 0; border-radius: 999px; background: var(--v2-ink); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;
+        }
+        .cd-me-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .cd-me-meta strong { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cd-me-meta span { font-size: 12px; color: var(--v2-muted); }
+        .cd-me a { font-size: 12px; color: var(--v2-muted); white-space: nowrap; }
+
+        .cd-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 28px 40px 40px; gap: 32px; }
+        .cd-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .cd-head h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -.03em; }
+        .cd-head h1 span { color: var(--v2-muted); }
+        .cd-head .v2-btn { height: 40px; padding: 0 20px; }
+
+        .cd-view { display: flex; flex-direction: column; gap: 32px; }
+        .cd-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .cd-stat { padding: 20px 22px; border: 1px solid var(--v2-mist); border-radius: 16px; display: flex; flex-direction: column; gap: 14px; }
+        .cd-stat span { font-size: 13px; color: var(--v2-muted); }
+        .cd-stat strong { font-size: 36px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+
+        .cd-box { padding: 22px; border: 1px solid var(--v2-mist); border-radius: 16px; display: flex; flex-direction: column; gap: 18px; }
+        .cd-box-title { font-size: 15px; font-weight: 600; }
+        .cd-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+        .cd-bar-row { display: flex; flex-direction: column; gap: 10px; }
+        .cd-bar-top { display: flex; justify-content: space-between; font-size: 13px; }
+        .cd-bar-top strong { font-weight: 600; }
+        .cd-bar-top span { color: var(--v2-muted); font-variant-numeric: tabular-nums; }
+        .cd-track { height: 6px; border-radius: 999px; background: var(--v2-wash); overflow: hidden; }
+        .cd-track div { height: 100%; border-radius: 999px; background: var(--v2-ink); }
+
+        .cd-tools { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .cd-tools > span { font-size: 15px; font-weight: 600; }
+        .cd-input {
+            height: 40px; width: min(100%, 260px); padding: 0 18px; border: 1px solid var(--v2-mist); border-radius: 999px;
+            font: inherit; font-size: 14px; outline: 0; color: var(--v2-ink); background: #fff;
+        }
+        .cd-input:focus { border-color: var(--v2-ink); }
+
+        .cd-table { border: 1px solid var(--v2-mist); border-radius: 16px; overflow-x: auto; }
+        .cd-table-inner { min-width: 880px; }
+        .cd-tr {
+            display: grid; grid-template-columns: minmax(220px, 2fr) minmax(110px, 1fr) minmax(100px, 1fr) minmax(140px, 1fr) 170px;
+            gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--v2-wash); font-size: 14px; transition: background .15s;
+        }
+        .cd-tr:last-child { border-bottom: 0; }
+        .cd-tr:not(.cd-th):hover { background: var(--v2-panel); }
+        .cd-th { padding: 12px 20px; font-size: 12px; color: var(--v2-muted); font-weight: 600; }
+
+        .cd-prod { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .cd-prod img {
+            width: 48px; height: 48px; flex-shrink: 0; border-radius: 12px; object-fit: cover; background: #fff;
+            border: 1px solid var(--v2-mist); box-shadow: 0 4px 10px -6px rgba(47, 65, 86, .35);
+        }
+        .cd-prod-text { display: flex; flex-direction: column; min-width: 0; }
+        .cd-prod-text strong { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cd-prod-text span { font-size: 12px; color: var(--v2-muted); }
+        .cd-serial {
+            justify-self: start; padding: 4px 10px; border-radius: 8px; background: var(--v2-wash);
+            font-family: var(--v2-mono); font-size: 12px; color: var(--v2-ink); letter-spacing: .02em;
+        }
+        .cd-muted { color: var(--v2-muted); }
+        .cd-badge {
+            justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px;
+            border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap;
+            background: #fff; color: var(--v2-ink); border: 1px solid var(--v2-mist);
+        }
+        .cd-badge i { width: 6px; height: 6px; border-radius: 999px; background: var(--v2-muted); box-shadow: 0 0 0 3px var(--v2-wash); }
+        .cd-badge.is-good { background: var(--v2-wash); }
+        .cd-badge.is-good i { background: var(--v2-ink); box-shadow: 0 0 0 3px var(--v2-mist); }
+        .cd-badge.is-bad { background: #FBEDEC; color: var(--v2-danger); border-color: #F1CFCC; }
+        .cd-badge.is-bad i { background: var(--v2-danger); box-shadow: 0 0 0 3px #F6DCDA; }
+        .cd-row-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .cd-pill {
+            height: 32px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid var(--v2-mist); border-radius: 999px; font-size: 12px; font-weight: 600;
+            color: var(--v2-ink); background: #fff; cursor: pointer; transition: all .2s;
+        }
+        .cd-pill:hover { background: var(--v2-ink); color: #fff; border-color: var(--v2-ink); }
+        .cd-pill.is-solid { background: var(--v2-ink); color: #fff; border-color: var(--v2-ink); }
+        .cd-pill.is-solid:hover { background: var(--v2-muted); border-color: var(--v2-muted); }
+
+        .cd-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+        .cd-card {
+            background: #fff; border: 1px solid var(--v2-mist); border-radius: 20px; overflow: hidden;
+            display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s;
+        }
+        .cd-card:hover { transform: translateY(-2px); box-shadow: 0 24px 40px -24px rgba(47, 65, 86, .45); }
+        .cd-card-img { padding: 10px 10px 0; }
+        .cd-card-img img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; border-radius: 14px; background: var(--v2-wash); }
+        .cd-card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+        .cd-card-body strong { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+        .cd-card-body .cd-sub { font-size: 13px; color: var(--v2-muted); }
+        .cd-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .cd-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 4px; }
+        .cd-card-actions .cd-pill { height: 36px; font-size: 13px; }
+
+        .cd-form { width: min(100%, 440px); display: flex; flex-direction: column; gap: 14px; }
+        .cd-field {
+            height: 48px; padding: 0 20px; border: 1px solid var(--v2-mist); border-radius: 999px;
+            font-family: var(--v2-mono); font-size: 14px; outline: 0; background: #fff; color: var(--v2-ink);
+        }
+        .cd-field:focus { border-color: var(--v2-ink); }
+        .cd-drop {
+            position: relative; min-height: 160px; border: 1px dashed var(--v2-mist); border-radius: 20px; background: var(--v2-panel);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px;
+            font-size: 14px; color: var(--v2-muted); cursor: pointer; transition: border-color .2s, color .2s; text-align: center;
+        }
+        .cd-drop:hover, .cd-drop.is-over, .cd-drop:focus-within { border-color: var(--v2-ink); color: var(--v2-ink); }
+        .cd-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .cd-drop img { max-height: 120px; max-width: 100%; border-radius: 12px; }
+        .cd-form .v2-btn { height: 48px; }
+
+        .cd-lookup { width: min(100%, 440px); display: flex; flex-direction: column; gap: 20px; }
+        .cd-lookup form {
+            display: flex; gap: 8px; padding: 6px 6px 6px 20px; background: #fff;
+            border: 1px solid var(--v2-mist); border-radius: 999px;
+        }
+        .cd-lookup form:focus-within { border-color: var(--v2-ink); }
+        .cd-lookup input { flex: 1; min-width: 0; border: 0; outline: 0; font-family: var(--v2-mono); font-size: 14px; background: transparent; color: var(--v2-ink); }
+        .cd-lookup .v2-btn { height: 40px; padding: 0 20px; box-shadow: none; }
+        .cd-trail { display: flex; flex-direction: column; padding: 8px 20px; border: 1px solid var(--v2-mist); border-radius: 20px; }
+        .cd-trail-head { padding: 12px 0 4px; font-size: 12px; color: var(--v2-muted); font-weight: 600; }
+        .cd-step { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--v2-wash); }
+        .cd-step:last-child { border-bottom: 0; }
+        .cd-step i { width: 8px; height: 8px; flex-shrink: 0; border-radius: 999px; background: var(--v2-ink); box-shadow: 0 0 0 4px var(--v2-mist); }
+        .cd-step-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .cd-step-text strong { font-size: 14px; font-weight: 600; }
+        .cd-step-text span { font-size: 12px; color: var(--v2-muted); }
+        .cd-step time { font-family: var(--v2-mono); font-size: 12px; color: var(--v2-muted); white-space: nowrap; }
+        .cd-note { font-size: 14px; color: var(--v2-muted); text-align: center; margin: 0; }
+
+        @media (max-width: 860px) {
+            .cd-shell { flex-direction: column; }
+            .cd-side { position: static; height: auto; width: auto; padding: 16px; border-right: 0; border-bottom: 1px solid var(--v2-wash); gap: 12px; }
+            .cd-brand { padding: 0 12px; }
+            .cd-nav { flex-direction: row; flex-wrap: wrap; }
+            .cd-me { margin-top: 0; }
+            .cd-main { padding: 20px 16px 32px; gap: 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="cd-shell">
+    <aside class="cd-side">
+        <a href="/" class="cd-brand">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#2F4156" aria-hidden="true"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+            ProductGuard
+        </a>
+        <div class="cd-nav" role="tablist" aria-label="Consumer views">
+            <% views.forEach(function (v, i) { %>
+            <button type="button" role="tab" id="cdTab-<%= v.key %>" aria-controls="cdView-<%= v.key %>" data-view="<%= v.key %>" data-label="<%= v.label %>" aria-selected="<%= i === 0 ? 'true' : 'false' %>"><%= v.label %></button>
+            <% }); %>
+        </div>
+        <div class="cd-me">
+            <div class="cd-avatar" aria-hidden="true"><%= initial %></div>
+            <div class="cd-me-meta"><strong><%= d.fullName %></strong><span>Consumer</span></div>
+            <a href="/consumer/logout">Log out</a>
+        </div>
+    </aside>
+
+    <main class="cd-main">
+        <header class="cd-head">
+            <h1><span>Consumer</span> <b id="cdTitle" style="font-weight:600">Overview</b></h1>
+            <button type="button" class="v2-btn" data-goto="verify">Verify AI</button>
+        </header>
+
+        <!-- Overview -->
+        <section class="cd-view" id="cdView-overview" role="tabpanel" aria-labelledby="cdTab-overview">
+            <div class="cd-stats">
+                <div class="cd-stat"><span>Owned products</span><strong><%= d.stats.owned %></strong></div>
+                <div class="cd-stat"><span>Verified genuine</span><strong><%= d.stats.genuine %></strong></div>
+                <div class="cd-stat"><span>Flagged</span><strong><%= d.stats.flagged %></strong></div>
+                <div class="cd-stat"><span>Ledger events</span><strong><%= d.stats.events %></strong></div>
+            </div>
+
+            <div class="cd-box">
+                <span class="cd-box-title">Verification coverage</span>
+                <div class="cd-bars">
+                    <% coverage.forEach(function (c) { %>
+                    <div class="cd-bar-row">
+                        <div class="cd-bar-top"><strong><%= c.label %></strong><span><%= c.count %></span></div>
+                        <div class="cd-track"><div style="width:<%= owned ? Math.round(c.count / owned * 100) : 0 %>%"></div></div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+                <div class="cd-tools">
+                    <span>Owned products</span>
+                    <input class="cd-input" type="search" data-search-for="cdOverviewRows" placeholder="Search products" aria-label="Search products">
+                </div>
+                <div class="cd-table">
+                    <div class="cd-table-inner" id="cdOverviewRows">
+                        <div class="cd-tr cd-th"><span>Product</span><span>Serial</span><span>Stage</span><span>AI result</span><span></span></div>
+                        <% d.products.forEach(function (p) { const r = resultInfo[p.result]; %>
+                        <div class="cd-tr" data-row data-search="<%= searchKey(p) %>">
+                            <div class="cd-prod">
+                                <img src="/static/product_images/<%= p.image %>" alt="" loading="lazy">
+                                <div class="cd-prod-text"><strong><%= p.productName %></strong><span><%= p.brand %> · <%= p.modelName %></span></div>
+                            </div>
+                            <span class="cd-serial">#<%= p.serialNo %></span>
+                            <span class="cd-muted"><%= p.stage %></span>
+                            <span class="cd-badge <%= r.cls %>"><i></i><%= r.label %></span>
+                            <div class="cd-row-actions">
+                                <a href="/history/<%= encodeURIComponent(p.serialNo) %>" class="cd-pill">History</a>
+                                <button type="button" class="cd-pill is-solid" data-goto="verify" data-serial="<%= p.serialNo %>">Verify</button>
+                            </div>
+                        </div>
+                        <% }); %>
+                        <p class="v2-empty" data-empty <%= owned ? 'hidden' : '' %>><%= owned ? 'No products match.' : 'You don’t own any products yet. A seller assigns them to you at purchase.' %></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Products -->
+        <section class="cd-view" id="cdView-products" role="tabpanel" aria-labelledby="cdTab-products" hidden>
+            <% if (owned) { %>
+            <div class="cd-cards">
+                <% d.products.forEach(function (p) { const r = resultInfo[p.result]; %>
+                <article class="cd-card">
+                    <div class="cd-card-img"><img src="/static/product_images/<%= p.image %>" alt="<%= p.productName %>" loading="lazy"></div>
+                    <div class="cd-card-body">
+                        <div style="display:flex;flex-direction:column;gap:4px">
+                            <strong><%= p.productName %></strong>
+                            <span class="cd-sub"><%= p.brand %> · <%= p.modelName %></span>
+                        </div>
+                        <div class="cd-card-meta">
+                            <span class="cd-serial">#<%= p.serialNo %></span>
+                            <span class="cd-badge <%= r.cls %>"><i></i><%= r.label %></span>
+                        </div>
+                        <div class="cd-card-actions">
+                            <button type="button" class="cd-pill is-solid" data-goto="verify" data-serial="<%= p.serialNo %>">Verify</button>
+                            <a href="/history/<%= encodeURIComponent(p.serialNo) %>" class="cd-pill">History</a>
+                        </div>
+                    </div>
+                </article>
+                <% }); %>
+            </div>
+            <% } else { %>
+            <p class="v2-empty" style="text-align:left;padding:0">You don’t own any products yet. A seller assigns them to you at purchase.</p>
+            <% } %>
+        </section>
+
+        <!-- Verify AI -->
+        <section class="cd-view" id="cdView-verify" role="tabpanel" aria-labelledby="cdTab-verify" hidden>
+            <form class="cd-form" action="/verify-image" method="POST" enctype="multipart/form-data">
+                <input class="cd-field" id="cdVerifySerial" type="text" name="serial_no" placeholder="Serial number" aria-label="Serial number" autocomplete="off" required>
+                <label class="cd-drop" id="cdDrop">
+                    <input type="file" name="consumer_image" id="cdVerifyImg" accept="image/*" required aria-label="Product photo">
+                    <img id="cdPreview" alt="" hidden>
+                    <span id="cdDropText">Drop product photo or browse</span>
+                </label>
+                <button type="submit" class="v2-btn">Verify with AI</button>
+            </form>
+        </section>
+
+        <!-- Lookup -->
+        <section class="cd-view" id="cdView-lookup" role="tabpanel" aria-labelledby="cdTab-lookup" hidden>
+            <div class="cd-lookup">
+                <form id="cdLookupForm">
+                    <input id="cdLookupSerial" placeholder="Serial number, e.g. 1001" aria-label="Serial number" autocomplete="off" required>
+                    <button type="submit" class="v2-btn">Lookup</button>
+                </form>
+                <div id="cdLookupResult" aria-live="polite"></div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+(function () {
+    var tabs = document.querySelectorAll('.cd-nav [role="tab"]');
+    var title = document.getElementById('cdTitle');
+
+    function show(view, push) {
+        var found = false;
+        tabs.forEach(function (t) {
+            var on = t.getAttribute('data-view') === view;
+            if (on) { found = true; title.textContent = t.getAttribute('data-label'); }
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+            document.getElementById('cdView-' + t.getAttribute('data-view')).hidden = !on;
+        });
+        if (!found) return show('overview', push);
+        if (push) {
+            try {
+                var u = new URL(window.location.href);
+                if (view === 'overview') u.searchParams.delete('view'); else u.searchParams.set('view', view);
+                window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+            } catch (e) {}
+        }
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.getAttribute('data-view'), true); }); });
+    document.querySelectorAll('[data-goto]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            show(b.getAttribute('data-goto'), true);
+            var serial = b.getAttribute('data-serial');
+            if (serial) document.getElementById('cdVerifySerial').value = serial;
+        });
+    });
+    try { show(new URLSearchParams(window.location.search).get('view') || 'overview', false); } catch (e) {}
+
+    // Table search.
+    document.querySelectorAll('[data-search-for]').forEach(function (input) {
+        input.addEventListener('input', function () {
+            var box = document.getElementById(input.getAttribute('data-search-for'));
+            var q = input.value.trim().toLowerCase();
+            var rows = box.querySelectorAll('[data-row]');
+            var shown = 0;
+            rows.forEach(function (r) { r.hidden = !!q && r.getAttribute('data-search').indexOf(q) === -1; if (!r.hidden) shown++; });
+            var empty = box.querySelector('[data-empty]');
+            if (empty && rows.length) empty.hidden = shown > 0;
+        });
+    });
+
+    // Photo picker: preview and drag-over state.
+    var drop = document.getElementById('cdDrop');
+    var file = document.getElementById('cdVerifyImg');
+    var preview = document.getElementById('cdPreview');
+    var dropText = document.getElementById('cdDropText');
+    file.addEventListener('change', function () {
+        var f = file.files && file.files[0];
+        if (!f) { preview.hidden = true; dropText.textContent = 'Drop product photo or browse'; return; }
+        preview.src = URL.createObjectURL(f);
+        preview.hidden = false;
+        dropText.textContent = f.name;
+    });
+    ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function () { drop.classList.add('is-over'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function () { drop.classList.remove('is-over'); }); });
+
+    // Serial lookup.
+    var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+    var out = document.getElementById('cdLookupResult');
+    document.getElementById('cdLookupForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var serial = document.getElementById('cdLookupSerial').value.trim().replace(/^#/, '');
+        if (!serial) return;
+        out.innerHTML = '<p class="cd-note">Looking up…</p>';
+        var url = '/api/trail/' + encodeURIComponent(serial);
+        fetch(window.pgWithAuth ? window.pgWithAuth(url) : url, { headers: { Accept: 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.found) { out.innerHTML = '<p class="cd-note">No record for this serial</p>'; return; }
+                out.innerHTML = '<div class="cd-trail"><div class="cd-trail-head">' + esc(data.product) + ' · #' + esc(data.serialNo) + '</div>'
+                    + data.trail.map(function (t) {
+                        return '<div class="cd-step"><i></i><div class="cd-step-text"><strong>' + esc(t.who) + ' · ' + esc(t.name) + '</strong><span>' + esc(t.what) + '</span></div>'
+                            + (t.when ? '<time>' + esc(t.when) + '</time>' : '') + '</div>';
+                    }).join('') + '</div>';
+            })
+            .catch(function () { out.innerHTML = '<p class="cd-note">Lookup failed. Try again.</p>'; });
+    }, true);
+})();
+</script>
+
+<%# The shared footer partial starts with </main> and adds the auth-token and toast scripts. %>
+<main hidden>
+<%- include('partials/footer') %>

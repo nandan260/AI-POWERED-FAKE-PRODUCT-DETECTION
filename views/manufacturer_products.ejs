@@ -1,0 +1,49 @@
+<%- include('partials/page_start', { title: 'Products', pageHeading: 'Products' }) %>
+
+<div class="panel dash-table-panel" style="height:100%;">
+    <div class="table-toolbar">
+        <span class="panel-title">Products</span>
+        <div class="ws-search-wrap">
+            <%- include('partials/icon', { name: 'search', px: 15 }) %>
+            <input type="text" id="searchInput" class="ws-search-input" placeholder="Search..." aria-label="Search products">
+        </div>
+    </div>
+
+    <div class="ws-table-wrap">
+        <% if (products.length === 0) { %>
+        <div class="empty-state-box">
+            <p>No registered products yet.</p>
+            <a href="/register"><button type="button" class="ws-primary-btn">Register Product</button></a>
+        </div>
+        <% } else { %>
+        <div class="product-grid" id="productTable" style="margin-top:4px;">
+            <% products.forEach(function(product) { %>
+            <div class="product-card">
+                <img src="/static/product_images/<%= product.originalImage %>" class="product-card-image" loading="lazy" decoding="async" alt="<%= product.productName %>">
+                <div class="product-info">
+                    <h2><%= product.productName %></h2>
+                    <p><%= product.brand %> · <%= product.modelName %></p>
+                    <p class="mono-cell">#<%= product.serialNo %></p>
+                    <div style="margin:6px 0;"><%- include('partials/status_badge', { label: product.status, ownerType: product.currentOwnerType }) %></div>
+                    <div class="row-actions" style="margin-top:10px;">
+                        <a href="/history/<%= product.serialNo %>" class="row-link">History</a>
+                        <a href="/product/<%= product.id %>" class="row-link">Details</a>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function () {
+    let value = this.value.toLowerCase();
+    document.querySelectorAll(".product-card").forEach(function(card) {
+        card.style.display = card.innerText.toLowerCase().includes(value) ? "block" : "none";
+    });
+});
+</script>
+
+<%- include('partials/page_end') %>

@@ -1,0 +1,54 @@
+<%- include('partials/page_start', { title: 'Register Product', pageHeading: 'Register Product' }) %>
+
+<div class="register-container compact-form-wrap">
+    <div class="register-card compact-card">
+        <% if (typeof error !== 'undefined' && error) { %>
+            <p class="status-fake" style="margin-bottom: 10px; text-align: center;"><%= error %></p>
+        <% } %>
+
+        <form action="/register" method="POST" enctype="multipart/form-data">
+            <div class="form-two-col">
+                <div>
+                    <label for="regBrand">Brand</label>
+                    <input id="regBrand" type="text" name="brand" placeholder="Brand" required>
+                </div>
+                <div>
+                    <label for="regProductName">Product Name</label>
+                    <input id="regProductName" type="text" name="product_name" placeholder="Product" required>
+                </div>
+            </div>
+
+            <div class="form-two-col">
+                <div>
+                    <label for="regModelName">Model</label>
+                    <input id="regModelName" type="text" name="model_name" placeholder="Model" required>
+                </div>
+                <div>
+                    <label for="regSerialNo">Serial Number</label>
+                    <input id="regSerialNo" type="text" name="serial_no" placeholder="Serial No" required>
+                </div>
+            </div>
+
+            <label for="imageInput">Image</label>
+            <div class="dropzone">
+                <input type="file" id="imageInput" name="original_image" class="dropzone-input" accept="image/*" required>
+                <div class="dropzone-prompt">
+                    <span class="dropzone-icon"><%- include('partials/icon', { name: 'upload', px: 18 }) %></span>
+                    <span>Drop product image or browse</span>
+                </div>
+                <div class="dropzone-preview" style="display:none;">
+                    <img class="dropzone-thumb" src="" alt="Preview">
+                    <span class="dropzone-filename"></span>
+                    <button type="button" class="dropzone-clear">Remove</button>
+                </div>
+            </div>
+
+            <button type="submit">
+                <%- include('partials/icon', { name: 'upload', px: 17 }) %>
+                <span>Register</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/page_end') %>

@@ -1,0 +1,322 @@
+<%- include('workspace_start', { title: pageTitle, pageHeading: pageHeading, workspace: workspace, isDashboard: true }) %>
+
+<!-- 4-Column KPI Strip -->
+<section class="kpi-grid" aria-label="Key metrics">
+    <% kpis.forEach(function(kpi) { %>
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <span><%= kpi.label %></span>
+                <span class="kpi-icon"><%- include('icon', { name: kpi.icon, px: 15 }) %></span>
+            </div>
+            <div class="kpi-value"><%= kpi.value %></div>
+        </div>
+    <% }) %>
+</section>
+
+<%
+const visibleStages = workspace.role === 'consumer'
+    ? stages.filter(function(st) { return st.label === 'With Consumer'; })
+    : stages;
+%>
+<!-- Sleek Horizontal Supply Chain Strip -->
+<section class="panel supply-strip" aria-label="Supply Chain">
+    <div class="supply-strip-head">
+        <div class="panel-title">Supply Chain</div>
+        <div class="supply-inline-stats">
+            <span><strong><%= verificationSummary.genuine %></strong> Genuine</span>
+            <span><strong><%= verificationSummary.manual %></strong> Review</span>
+            <span><strong><%= verificationSummary.fake %></strong> Fake</span>
+        </div>
+    </div>
+
+    <div class="stage-grid-3 <%= visibleStages.length === 1 ? 'stage-grid-1' : '' %>">
+        <% visibleStages.forEach(function(st) { %>
+            <div class="stage-row">
+                <div class="stage-meta">
+                    <span class="stage-name"><%= st.label %></span>
+                    <span class="stage-num"><%= st.count %> (<%= st.percent %>%)</span>
+                </div>
+                <div class="stage-track" role="progressbar" aria-label="<%= st.label %>" aria-valuenow="<%= st.percent %>" aria-valuemin="0" aria-valuemax="100">
+                    <div class="stage-fill" style="width:<%= st.percent %>%; background:<%= st.color %>;"></div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</section>
+
+<!-- Single-Page Products Panel -->
+<section class="panel dash-table-panel">
+    <div class="table-toolbar">
+        <div class="table-toolbar-left">
+            <span class="panel-title"><%= tableTitle %></span>
+            <% if (workspace.role !== 'consumer') { %>
+                <div class="filter-tabs" role="tablist" aria-label="Filter products">
+                    <button type="button" role="tab" aria-selected="true" class="filter-tab active" data-filter="all">All</button>
+                    <button type="button" role="tab" aria-selected="false" class="filter-tab" data-filter="Manufacturer">Registered</button>
+                    <button type="button" role="tab" aria-selected="false" class="filter-tab" data-filter="Seller">Seller</button>
+                    <button type="button" role="tab" aria-selected="false" class="filter-tab" data-filter="Consumer">Consumer</button>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="ws-search-wrap">
+            <%- include('icon', { name: 'search', px: 15 }) %>
+            <input type="text" id="dashTableSearch" class="ws-search-input" placeholder="Search..." aria-label="Search products">
+        </div>
+    </div>
+
+    <div class="ws-table-wrap">
+        <table class="ws-table" id="dashProductsTable">
+            <thead>
+                <tr>
+                    <th scope="col" data-sort>Product <%- include('icon', { name: 'sort', px: 12 }) %></th>
+                    <th scope="col" data-sort>Serial <%- include('icon', { name: 'sort', px: 12 }) %></th>
+                    <th scope="col" data-sort>Stage <%- include('icon', { name: 'sort', px: 12 }) %></th>
+                    <th scope="col" data-sort>Status <%- include('icon', { name: 'sort', px: 12 }) %></th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% products.forEach(function(p) { %>
+                    <tr data-owner="<%= p.currentOwnerType %>">
+                        <td>
+                            <div class="product-cell">
+                                <img src="/static/product_images/<%= p.originalImage %>" class="row-thumb" width="32" height="32" loading="lazy" decoding="async" alt="<%= p.productName %>">
+                                <div class="product-cell-text">
+                                    <span class="product-cell-name"><%= p.productName %></span>
+                                    <span class="product-cell-sub"><%= p.brand %> · <%= p.modelName %></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="mono-cell">
+                            <span class="mono-copy">
+                                <span>#<%= p.serialNo %></span>
+                                <button type="button" class="copy-btn" data-copy="<%= p.serialNo %>" title="Copy serial" aria-label="Copy serial">
+                                    <%- include('icon', { name: 'copy', px: 12 }) %>
+                                </button>
+                            </span>
+                        </td>
+                        <td><%= p.currentOwnerType %></td>
+                        <td>
+                            <%- include('status_badge', { label: p.status, ownerType: p.currentOwnerType }) %>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <button type="button" class="row-link row-preview-btn" data-product-id="<%= p.id %>">Preview</button>
+                                <a href="/history/<%= p.serialNo %>" class="row-link">History</a>
+                                <% if (workspace.role === 'consumer') { %>
+                                    <a href="/verify/<%= p.serialNo %>" class="row-link">Verify</a>
+                                <% } else if (workspace.role === 'manufacturer' && p.currentOwnerType === 'Manufacturer') { %>
+                                    <a href="/manufacturer/assign" class="row-link">Assign</a>
+                                <% } else if (workspace.role === 'seller' && p.currentOwnerType === 'Seller') { %>
+                                    <a href="/seller/assign-consumer" class="row-link">Assign</a>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <div id="dashEmptyState" class="empty-state-box" style="<%= products.length === 0 ? '' : 'display:none;' %>">
+            <p>No matching products.</p>
+            <% if (products.length > 0) { %>
+                <button type="button" class="demo-fill-btn" id="dashResetFiltersBtn">Reset Filters</button>
+            <% } else if (workspace.primaryAction) { %>
+                <a href="<%= workspace.primaryAction.href %>"><button type="button" class="ws-primary-btn"><%= workspace.primaryAction.label %></button></a>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<!-- Inline Quick-Preview Drawer -->
+<div class="pg-drawer-backdrop" id="pgDrawerBackdrop"></div>
+<aside class="pg-drawer" id="pgQuickDrawer" role="dialog" aria-modal="true" aria-labelledby="pgDrawerTitle" aria-hidden="true">
+    <div class="pg-drawer-head">
+        <div class="panel-title" id="pgDrawerTitle">Product Preview</div>
+        <button type="button" class="pg-drawer-close" id="pgDrawerClose" aria-label="Close preview">
+            <%- include('icon', { name: 'x', px: 17 }) %>
+        </button>
+    </div>
+    <div class="pg-drawer-body" id="pgDrawerBody">
+        <div class="empty-state">Loading...</div>
+    </div>
+</aside>
+
+<script>
+(function() {
+    const searchEl = document.getElementById("dashTableSearch");
+    const filterBtns = document.querySelectorAll(".filter-tab");
+    const rows = document.querySelectorAll("#dashProductsTable tbody tr");
+    const emptyEl = document.getElementById("dashEmptyState");
+    const resetBtn = document.getElementById("dashResetFiltersBtn");
+    let activeFilter = "all";
+
+    function applyFilters() {
+        const q = (searchEl ? searchEl.value : "").trim().toLowerCase();
+        let visible = 0;
+
+        rows.forEach(function(row) {
+            const owner = row.getAttribute("data-owner") || "";
+            const text = row.innerText.toLowerCase();
+            const matchFilter = activeFilter === "all" || owner === activeFilter;
+            const matchQuery = !q || text.includes(q);
+            const show = matchFilter && matchQuery;
+            row.style.display = show ? "" : "none";
+            if (show) visible++;
+        });
+
+        if (emptyEl) {
+            emptyEl.style.display = visible === 0 ? "flex" : "none";
+        }
+    }
+
+    filterBtns.forEach(function(btn) {
+        btn.addEventListener("click", function() {
+            filterBtns.forEach(function(b) {
+                b.classList.remove("active");
+                b.setAttribute("aria-selected", "false");
+            });
+            btn.classList.add("active");
+            btn.setAttribute("aria-selected", "true");
+            activeFilter = btn.getAttribute("data-filter") || "all";
+            applyFilters();
+        });
+    });
+
+    if (searchEl) {
+        searchEl.addEventListener("input", applyFilters);
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener("click", function() {
+            if (searchEl) searchEl.value = "";
+            activeFilter = "all";
+            filterBtns.forEach(function(b) {
+                const isAll = b.getAttribute("data-filter") === "all";
+                b.classList.toggle("active", isAll);
+                b.setAttribute("aria-selected", isAll ? "true" : "false");
+            });
+            applyFilters();
+        });
+    }
+
+    // Inline Quick-Preview Drawer
+    const drawer = document.getElementById("pgQuickDrawer");
+    const backdrop = document.getElementById("pgDrawerBackdrop");
+    const closeBtn = document.getElementById("pgDrawerClose");
+    const titleEl = document.getElementById("pgDrawerTitle");
+    const bodyEl = document.getElementById("pgDrawerBody");
+    const authToken = <%- JSON.stringify(typeof fallbackAuthToken !== 'undefined' && fallbackAuthToken ? fallbackAuthToken : '') %>;
+    const currentRole = <%- JSON.stringify(workspace.role) %>;
+
+    function withAuth(urlStr) {
+        if (!authToken) return urlStr;
+        const sep = urlStr.includes("?") ? "&" : "?";
+        return urlStr + sep + "_auth=" + encodeURIComponent(authToken);
+    }
+
+    function esc(s) {
+        return String(s || "").replace(/[&<>"']/g, function(c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    let lastFocusedTrigger = null;
+
+    function closeDrawer() {
+        if (drawer) {
+            drawer.classList.remove("open");
+            drawer.setAttribute("aria-hidden", "true");
+        }
+        if (backdrop) backdrop.classList.remove("open");
+        if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === "function") {
+            lastFocusedTrigger.focus();
+            lastFocusedTrigger = null;
+        }
+    }
+
+    function openDrawer(productId, triggerEl) {
+        if (!drawer || !backdrop || !bodyEl) return;
+        lastFocusedTrigger = triggerEl || document.activeElement;
+        drawer.classList.add("open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("open");
+        if (closeBtn) closeBtn.focus();
+        bodyEl.innerHTML = '<div class="empty-state">Loading...</div>';
+
+        fetch("/api/product/" + encodeURIComponent(productId))
+            .then(function(r) {
+                if (!r.ok) throw new Error("Not found");
+                return r.json();
+            })
+            .then(function(data) {
+                const p = data.product;
+                const hist = data.history || [];
+                if (titleEl) titleEl.textContent = p.productName;
+
+                let histHtml = "";
+                if (hist.length === 0) {
+                    histHtml = '<div class="empty-state">No transfers recorded.</div>';
+                } else {
+                    histHtml = hist.map(function(h) {
+                        const shortHash = h.blockchainHash && h.blockchainHash.length > 18
+                            ? h.blockchainHash.slice(0, 10) + "…" + h.blockchainHash.slice(-6)
+                            : (h.blockchainHash || "");
+                        return '<div class="drawer-chain-item">'
+                            + '<div class="drawer-chain-top">'
+                            + '<strong>' + esc(h.fromOwnerType) + ' &rarr; ' + esc(h.toOwnerType) + '</strong>'
+                            + '<span class="mono-cell">' + esc(h.transferDate) + '</span>'
+                            + '</div>'
+                            + '<div class="tx">' + esc(shortHash) + '</div>'
+                            + '</div>';
+                    }).join("");
+                }
+
+                const qrHtml = p.qrCode
+                    ? '<div class="drawer-qr-box"><img src="/static/qr_codes/' + esc(p.qrCode) + '" alt="QR"></div>'
+                    : '';
+
+                const verifyBtn = currentRole === 'consumer'
+                    ? '<a href="' + withAuth('/verify/' + encodeURIComponent(p.serialNo)) + '"><button type="button" class="ws-primary-btn">Verify AI</button></a>'
+                    : '';
+
+                bodyEl.innerHTML =
+                    '<div class="drawer-media-row">'
+                    + '<img src="/static/product_images/' + esc(p.originalImage) + '" class="drawer-product-img" alt="' + esc(p.productName) + '">'
+                    + qrHtml
+                    + '</div>'
+                    + '<div class="drawer-meta-grid">'
+                    + '<div><span>Brand</span><strong>' + esc(p.brand) + '</strong></div>'
+                    + '<div><span>Model</span><strong>' + esc(p.modelName) + '</strong></div>'
+                    + '<div><span>Serial</span><strong class="mono-cell">#' + esc(p.serialNo) + '</strong></div>'
+                    + '<div><span>Stage</span><strong>' + esc(p.currentOwnerType) + '</strong></div>'
+                    + '<div><span>Status</span><strong>' + esc(p.status) + '</strong></div>'
+                    + '</div>'
+                    + '<div class="drawer-section-title">Custody Chain</div>'
+                    + '<div class="drawer-chain-list">' + histHtml + '</div>'
+                    + '<div class="drawer-actions">'
+                    + '<a href="' + withAuth('/product/' + p.id) + '"><button type="button" class="ws-primary-btn">Full Details</button></a>'
+                    + '<a href="' + withAuth('/history/' + encodeURIComponent(p.serialNo)) + '"><button type="button" class="demo-fill-btn">Ledger</button></a>'
+                    + verifyBtn
+                    + '</div>';
+            })
+            .catch(function() {
+                bodyEl.innerHTML = '<div class="empty-state">Unable to load product.</div>';
+            });
+    }
+
+    document.querySelectorAll(".row-preview-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+            openDrawer(btn.getAttribute("data-product-id"), btn);
+        });
+    });
+
+    if (closeBtn) closeBtn.addEventListener("click", closeDrawer);
+    if (backdrop) backdrop.addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") closeDrawer();
+    });
+})();
+</script>
+
+<%- include('workspace_end') %>
