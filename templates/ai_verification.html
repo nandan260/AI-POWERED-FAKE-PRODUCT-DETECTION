@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}AI Product Verification{% endblock %}
+
+{% block content %}
+
+<h1 style="text-align:center;">
+    🤖 AI Product Verification
+</h1>
+
+<br>
+
+<div class="verify-container">
+
+    <div class="verify-image-card">
+
+        <h2>Manufacturer Image</h2>
+
+        <img
+        src="{{ url_for('static', filename='product_images/' + product[0]) }}"
+        class="verify-img">
+
+    </div>
+
+    <div class="verify-image-card">
+
+        <h2>Consumer Uploaded Image</h2>
+
+        <img
+        src="{{ url_for('static', filename='uploaded_images/' + uploaded_image) }}"
+        class="verify-img">
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="result-card">
+
+    <h2>Verification Report</h2>
+
+    <table class="details-table">
+
+        <tr>
+            <td><b>AI Prediction</b></td>
+            <td>{{ prediction|capitalize }}</td>
+        </tr>
+
+        <tr>
+            <td><b>Confidence</b></td>
+            <td>{{ confidence_percent }}%</td>
+        </tr>
+
+        <tr>
+            <td><b>Image Similarity</b></td>
+            <td>{{ similarity_percent }}%</td>
+        </tr>
+
+        <tr>
+            <td><b>Final Decision</b></td>
+
+            <td>
+
+                {% if "GENUINE" in final_result.upper() %}
+
+                    <span class="badge-success">
+                        ✅ {{ final_result }}
+                    </span>
+
+                {% else %}
+
+                    <span class="badge-danger">
+                        ❌ {{ final_result }}
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    <h3>AI Confidence</h3>
+
+    <div class="progress">
+
+        <div
+            class="progress-bar"
+            style="width: {{ confidence_percent }}%;">
+
+            {{ confidence_percent }}%
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <h3>Image Similarity</h3>
+
+    <div class="progress">
+
+        <div
+            class="progress-bar-green"
+            style="width: {{ similarity_percent }}%;">
+
+            {{ similarity_percent }}%
+
+        </div>
+
+    </div>
+
+    <br><br>
+
+    <h2 style="text-align:center;">
+        ⛓ Blockchain Verification
+    </h2>
+
+    <table class="details-table">
+
+        <tr>
+
+            <td><b>Status</b></td>
+
+            <td>
+
+                {% if blockchain_verified %}
+
+                    <span class="badge-success">
+
+                        ✅ VERIFIED
+
+                    </span>
+
+                {% else %}
+
+                    <span class="badge-danger">
+
+                        ❌ NOT VERIFIED
+
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td><b>Manufacturer</b></td>
+
+            <td>{{ manufacturer_name }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td><b>Seller</b></td>
+
+            <td>
+
+                {% if seller_name %}
+
+                    {{ seller_name }}
+
+                {% else %}
+
+                    Not Assigned
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td><b>Consumer</b></td>
+
+            <td>
+
+                {% if consumer_name %}
+
+                    {{ consumer_name }}
+
+                {% else %}
+
+                    Not Assigned
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td><b>Serial Number</b></td>
+
+            <td>{{ product[4] }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td><b>Blockchain Network</b></td>
+
+            <td>Ganache</td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    <a href="/history/{{ product[4] }}">
+
+        <button>
+
+            ⛓ Blockchain History
+
+        </button>
+
+    </a>
+
+    <a href="/consumer/dashboard">
+
+        <button>
+
+            🏠 Dashboard
+
+        </button>
+
+    </a>
+
+</div>
+
+{% endblock %}

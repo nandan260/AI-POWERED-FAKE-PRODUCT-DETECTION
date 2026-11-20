@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Blockchain Timeline{% endblock %}
+
+{% block content %}
+
+<h1>⛓ Blockchain Ownership Timeline</h1>
+
+<br>
+
+<div class="timeline">
+
+{% for item in history %}
+
+<div class="timeline-item">
+
+    <div class="timeline-circle">
+
+        ✔
+
+    </div>
+
+    <div class="timeline-content">
+
+        <h2>
+
+            {{ item[0] }}
+
+            ➜
+
+            {{ item[1] }}
+
+        </h2>
+
+        <p>
+
+            {{ item[2] }}
+
+        </p>
+
+        <small>
+
+            TX Hash:
+
+            {{ item[3] }}
+
+        </small>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

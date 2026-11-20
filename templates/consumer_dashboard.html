@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Consumer Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>👤 Consumer Dashboard</h1>
+
+<p>
+Welcome,
+<b>{{ consumer_name }}</b>
+</p>
+
+<br>
+<div class="stats-container">
+
+    <div class="stat-card">
+
+        <h2>{{ total_products }}</h2>
+
+        <p>Total Products</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ verified_products }}</h2>
+
+        <p>Verified</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ fake_products }}</h2>
+
+        <p>Fake Detected</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ blockchain_transactions }}</h2>
+
+        <p>Blockchain TX</p>
+
+    </div>
+
+</div>
+
+<div class="dashboard-grid">
+
+    <div class="dashboard-card">
+
+        <h2>📦</h2>
+
+        <h3>My Products</h3>
+
+        <p>
+            View products assigned to you.
+        </p>
+
+        <a href="/consumer/products">
+            <button>View Products</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>🤖</h2>
+
+        <h3>AI Verification</h3>
+
+        <p>
+            Verify product using MobileNetV2.
+        </p>
+
+        <a href="/consumer/products">
+            <button>Verify</button>
+        </a>
+
+    </div>
+
+
+    <div class="dashboard-card">
+
+        <h2>🚪</h2>
+
+        <h3>Logout</h3>
+
+        <p>
+            Logout safely.
+        </p>
+
+        <a href="/consumer/logout">
+            <button class="danger-btn">
+                Logout
+            </button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

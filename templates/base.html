@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        AI Fake Product Detection
+        {% endblock %}
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <!-- Loading Screen -->
+
+    <div id="loading">
+
+        <div class="loader"></div>
+
+        <h2>Verifying Product...</h2>
+
+    </div>
+
+    <!-- Navbar -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            🤖 AI Product Verification
+        </div>
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="/">Home</a>
+            </li>
+
+            <li>
+                <a href="/manufacturer/dashboard">
+                    Manufacturer
+                </a>
+            </li>
+
+            <li>
+                <a href="/seller/dashboard">
+                    Seller
+                </a>
+            </li>
+
+            <li>
+                <a href="/consumer/dashboard">
+                    Consumer
+                </a>
+            </li>
+
+            <li>
+                <a href="/history">
+                    History
+                </a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+    <!-- Main Content -->
+
+    <div class="container">
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    <!-- Footer -->
+
+    <footer>
+
+        <p>
+            AI Powered Fake Product Detection with Blockchain Verification
+        </p>
+
+        <p>
+            © 2026 MS Engineering College
+        </p>
+
+    </footer>
+
+    <!-- Loading Script -->
+
+    <script>
+
+        document.querySelectorAll("form").forEach(function(form){
+
+            form.addEventListener("submit", function(){
+
+                document.getElementById("loading").style.display = "flex";
+
+            });
+
+        });
+
+    </script>
+     <script>
+
+const searchInput=document.getElementById("searchInput");
+
+if(searchInput){
+
+searchInput.addEventListener("keyup",function(){
+
+let value=this.value.toLowerCase();
+
+let rows=document.querySelectorAll("#productTable tbody tr");
+
+rows.forEach(function(row){
+
+row.style.display=row.innerText.toLowerCase().includes(value)?"":"none";
+
+});
+
+});
+
+}
+
+</script>
+</body>
+
+</html>
