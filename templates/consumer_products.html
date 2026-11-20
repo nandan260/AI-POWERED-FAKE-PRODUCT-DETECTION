@@ -1,0 +1,63 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}My Products{% endblock %}
+
+{% block content %}
+
+<h1>📦 My Products</h1>
+
+<div class="product-grid">
+
+{% for product in products %}
+
+<div class="product-card">
+
+    <!-- Product Image -->
+    <img
+        src="{{ url_for('static', filename='product_images/' + product[5]) }}"
+        class="product-card-image"
+        alt="Product Image">
+
+    <div class="product-info">
+
+        <h2>{{ product[2] }}</h2>
+
+        <p><b>Brand:</b> {{ product[1] }}</p>
+        <p><b>Model:</b> {{ product[3] }}</p>
+        <p><b>Serial:</b> {{ product[4] }}</p>
+
+        <!-- Product QR Code -->
+        {% if product[6] %}
+        <div class="product-qr">
+            <p><b>Product QR Code</b></p>
+
+            <img
+                src="{{ url_for('static', filename='qr_codes/' + product[6]) }}"
+                alt="QR Code for {{ product[4] }}"
+                width="150">
+        </div>
+        {% else %}
+        <p><b>QR Code:</b> Not available</p>
+        {% endif %}
+
+        <br>
+
+        <span class="badge-success">Owned</span>
+
+        <br><br>
+
+        <a href="/verify/{{ product[4] }}">
+            <button>Verify Product</button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}
+```

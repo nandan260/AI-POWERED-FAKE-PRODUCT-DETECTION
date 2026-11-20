@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Product{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 480px; margin: 0 auto;">
+
+<h2>Verify Product</h2>
+
+<form
+action="/verify-image"
+method="post"
+enctype="multipart/form-data">
+
+<label>Serial Number</label>
+<input
+type="text"
+name="serial_no"
+required>
+
+<label>Upload Product Image</label>
+<input
+type="file"
+name="consumer_image"
+accept="image/*"
+required>
+
+<input
+type="submit"
+value="Verify">
+
+</form>
+
+</div>
+
+<br>
+
+<a href="/consumer/dashboard">Back</a>
+
+{% endblock %}

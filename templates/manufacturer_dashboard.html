@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Manufacturer Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>🏭 Manufacturer Dashboard</h1>
+
+<p>
+Welcome,
+<b>{{ company_name }}</b>
+</p>
+
+<br>
+<div class="stats-container">
+
+    <div class="stat-card">
+
+        <h2>{{ total_products }}</h2>
+
+        <p>Total Products</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ verified_products }}</h2>
+
+        <p>Verified</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ fake_products }}</h2>
+
+        <p>Fake Detected</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ blockchain_transactions }}</h2>
+
+        <p>Blockchain TX</p>
+
+    </div>
+
+</div>
+
+<div class="dashboard-grid">
+
+    <div class="dashboard-card">
+
+        <h2>📦</h2>
+
+        <h3>Products</h3>
+
+        <p>Register and manage products.</p>
+
+        <a href="/register">
+            <button>Register Product</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>👥</h2>
+
+        <h3>Assign Seller</h3>
+
+        <p>Transfer products to sellers.</p>
+
+        <a href="/manufacturer/assign">
+            <button>Assign Seller</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>📋</h2>
+
+        <h3>My Products</h3>
+
+        <p>View all registered products.</p>
+
+        <a href="/manufacturer/products">
+            <button>View Products</button>
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>⛓</h2>
+
+        <h3>Blockchain</h3>
+
+        <p>View blockchain transactions.</p>
+
+
+    </div>
+
+</div>
+
+<br><br>
+
+<div class="quick-actions">
+
+    <a href="/register">
+        <button>➕ Register Product</button>
+    </a>
+
+    <a href="/manufacturer/products">
+        <button>📦 Products</button>
+    </a>
+
+    <a href="/manufacturer/assign">
+        <button>👥 Assign Seller</button>
+    </a>
+
+   <a href="/manufacturer/logout">
+    <button class="danger-btn">Logout</button>
+</a>
+</div>
+
+{% endblock %}

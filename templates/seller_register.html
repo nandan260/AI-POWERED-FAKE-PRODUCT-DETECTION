@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Register{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+<div class="card">
+
+<h2>Seller Registration</h2>
+
+<form method="POST">
+
+    <label>Shop Name</label>
+    <input type="text" name="shop_name" required>
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <label>Password</label>
+    <input type="password" name="password" required>
+
+    <input type="submit" value="Register">
+
+</form>
+
+</div>
+</div>
+{% endblock %}

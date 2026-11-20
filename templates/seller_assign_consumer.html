@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Consumer{% endblock %}
+
+{% block content %}
+
+<div class="register-container">
+
+<div class="register-card">
+
+<h1>
+
+👤 Assign Product To Consumer
+
+</h1>
+
+<form
+action="/seller/assign-product-consumer"
+method="POST">
+
+<label>
+
+Select Product
+
+</label>
+
+<select
+name="product_id">
+
+{% for product in products %}
+
+<option
+value="{{ product[0] }}">
+
+{{ product[2] }}
+
+-
+
+{{ product[4] }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<label>
+
+Select Consumer
+
+</label>
+
+<select
+name="consumer_id">
+
+{% for consumer in consumers %}
+
+<option
+value="{{ consumer[0] }}">
+
+{{ consumer[1] }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<br><br>
+
+<button>
+
+Assign Product
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

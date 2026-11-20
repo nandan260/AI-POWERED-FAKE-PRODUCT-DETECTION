@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Consumer Login{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+<div class="card">
+
+<h2>Consumer Login</h2>
+
+<form method="POST">
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <label>Password</label>
+    <input type="password" name="password" required>
+
+    <input type="submit" value="Login">
+
+</form>
+
+<br>
+
+<a href="/consumer/register">Create New Account</a>
+
+</div>
+</div>
+{% endblock %}

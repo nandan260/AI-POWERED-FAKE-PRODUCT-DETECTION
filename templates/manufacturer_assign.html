@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Product{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 480px; margin: 0 auto;">
+
+<h2>Assign Product to Seller</h2>
+
+<form action="/manufacturer/assign-product" method="POST">
+
+<label>Select Product</label>
+<select name="product_id">
+{% for product in products %}
+<option value="{{ product[0] }}">
+{{ product[1] }} - {{ product[2] }} - {{ product[4] }}
+</option>
+{% endfor %}
+</select>
+
+<label>Select Seller</label>
+<select name="seller_id">
+{% for seller in sellers %}
+<option value="{{ seller[0] }}">
+{{ seller[1] }}
+</option>
+{% endfor %}
+</select>
+
+<input type="submit" value="Assign">
+
+</form>
+
+</div>
+{% endblock %}
