@@ -1,106 +1,407 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consumer Dashboard - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  input::placeholder {
+    color: #567C8D;
+  }
+  .nav-btn {
+    height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    text-align: left;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #567C8D;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+  }
+  .nav-btn:hover {
+    background: #EAF1F6;
+    color: #2F4156;
+  }
+  .nav-btn.active {
+    background: #EAF1F6;
+    color: #2F4156;
+    font-weight: 600;
+  }
+  .action-btn:hover {
+    background: #567C8D !important;
+  }
+  .card-hover {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 40px -24px rgba(47,65,86,0.45);
+  }
+  .row-hover {
+    transition: background 0.15s;
+  }
+  .row-hover:hover {
+    background: #F6F9FB;
+  }
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.active {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;padding:24px;display:flex">
+  <div style="flex:1;min-height:calc(100vh - 48px);background:#fff;border-radius:20px;overflow:hidden;display:flex">
 
-{% block title %}Consumer Dashboard{% endblock %}
+    <!-- Sidebar -->
+    <aside style="width:232px;flex-shrink:0;display:flex;flex-direction:column;padding:28px 16px 16px;border-right:1px solid #EAF1F6">
+      <a href="/" style="display:flex;align-items:center;gap:8px;padding:0 12px 28px;font-weight:700;font-size:15px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2F4156"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        ProductGuard
+      </a>
 
-{% block content %}
+      <!-- Navigation buttons -->
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button type="button" class="nav-btn active" onclick="switchView('Overview')">Overview</button>
+        <button type="button" class="nav-btn" onclick="switchView('My Products')">My Products</button>
+        <button type="button" class="nav-btn" onclick="switchView('Verify')">Verify</button>
+        <button type="button" class="nav-btn" onclick="switchView('Lookup')">Lookup</button>
+      </div>
 
-<h1>👤 Consumer Dashboard</h1>
+      <!-- User Info Footer -->
+      <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-top:1px solid #EAF1F6">
+        <div style="width:32px;height:32px;border-radius:999px;background:#2F4156;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">
+          {{ (full_name[0] if full_name else 'N') | upper }}
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <span style="font-size:13px;font-weight:600">{{ full_name or 'NANDAN' }}</span>
+          <span style="font-size:12px;color:#567C8D">Consumer</span>
+        </div>
+        <a href="/consumer/logout" style="font-size:12px;color:#567C8D">Log out</a>
+      </div>
+    </aside>
 
-<p>
-Welcome,
-<b>{{ consumer_name }}</b>
-</p>
+    <!-- Main Content Area -->
+    <main style="flex:1;min-width:0;display:flex;flex-direction:column;padding:28px 40px 40px;gap:32px">
+      <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.03em">
+          <span style="color:#567C8D">Consumer</span> <span id="viewTitle">Overview</span>
+        </h1>
+        <button type="button" onclick="switchView('Verify')" class="action-btn" style="height:40px;padding:0 20px;white-space:nowrap;flex-shrink:0;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28), 0 4px 14px -6px rgba(86,124,141,0.25)">Verify</button>
+      </header>
 
-<br>
-<div class="stats-container">
+      <!-- 1. Overview Tab -->
+      <div id="tabOverview" class="tab-pane active" style="gap:32px">
+        <!-- 4 Top Stat Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Owned products</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ total_owned }}</span>
+          </div>
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Verified genuine</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ total_owned }}</span>
+          </div>
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Flagged</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">0</span>
+          </div>
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Ledger events</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ ledger_count }}</span>
+          </div>
+        </div>
 
-    <div class="stat-card">
+        <!-- Supply Chain Card -->
+        <div style="padding:22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:18px">
+          <span style="font-size:15px;font-weight:600">Supply chain</span>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span style="font-weight:600">With consumer</span>
+                <span style="color:#567C8D;font-variant-numeric:tabular-nums">{{ total_owned }}</span>
+              </div>
+              <div style="height:6px;border-radius:999px;background:#EAF1F6;overflow:hidden">
+                <div style="height:100%;border-radius:999px;background:#2F4156;width:100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <h2>{{ total_products }}</h2>
+        <!-- Owned Products Table -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <span style="font-size:15px;font-weight:600">Owned products</span>
+            <input id="searchProducts" oninput="filterTable()" placeholder="Search products" style="height:40px;width:min(100%,260px);padding:0 18px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;color:#2F4156">
+          </div>
 
-        <p>Total Products</p>
+          <div style="border:1px solid #C8D9E6;border-radius:16px;overflow-x:auto">
+            <div style="min-width:880px">
+              <!-- Header -->
+              <div style="display:grid;grid-template-columns:minmax(220px,2fr) minmax(110px,1fr) minmax(100px,1fr) minmax(140px,1fr) 140px;gap:16px;padding:12px 20px;font-size:12px;color:#567C8D;font-weight:600;border-bottom:1px solid #EAF1F6">
+                <span>Product</span>
+                <span>Serial</span>
+                <span>Stage</span>
+                <span>Status</span>
+                <span></span>
+              </div>
 
-    </div>
+              <!-- Rows -->
+              <div id="productTableRows">
+                {% if products %}
+                  {% for p in products %}
+                    {% set search_data = (p[2] ~ ' ' ~ p[1] ~ ' ' ~ p[3] ~ ' ' ~ p[4]) | lower %}
+                    <div class="row-hover table-row" data-search="{{ search_data }}" style="display:grid;grid-template-columns:minmax(220px,2fr) minmax(110px,1fr) minmax(100px,1fr) minmax(140px,1fr) 140px;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid #EAF1F6;font-size:14px">
+                      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+                        {% if p[5] %}
+                        <img src="{{ url_for('static', filename='product_images/' ~ p[5]) }}" alt="" style="width:48px;height:48px;flex-shrink:0;border-radius:12px;object-fit:cover;background:#fff;border:1px solid #C8D9E6;box-shadow:0 4px 10px -6px rgba(47,65,86,0.35)">
+                        {% else %}
+                        <div style="width:48px;height:48px;flex-shrink:0;border-radius:12px;background:#EAF1F6;display:flex;align-items:center;justify-content:center;color:#567C8D;font-size:18px">📦</div>
+                        {% endif %}
+                        <div style="display:flex;flex-direction:column;min-width:0">
+                          <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p[2] }}</span>
+                          <span style="font-size:12px;color:#567C8D">{{ p[1] }} · {{ p[3] }}</span>
+                        </div>
+                      </div>
+                      <span style="justify-self:start;padding:4px 10px;border-radius:8px;background:#EAF1F6;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2F4156;letter-spacing:0.02em">#{{ p[4] }}</span>
+                      <span style="color:#567C8D">Consumer</span>
+                      <span style="justify-self:start;display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;background:#EAF1F6;color:#2F4156;border:1px solid #C8D9E6">
+                        <span style="width:6px;height:6px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 3px #C8D9E6"></span>Owned
+                      </span>
+                      <div style="display:flex;gap:14px;justify-content:flex-end;font-size:13px;font-weight:600">
+                        <a href="/history/{{ p[4] }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;border:1px solid #C8D9E6;border-radius:999px;font-size:12px;font-weight:600;color:#2F4156;background:#fff">History</a>
+                        <a href="/verify/{{ p[4] }}" class="action-btn" style="height:32px;padding:0 14px;border:0;border-radius:999px;font:inherit;font-size:12px;font-weight:600;color:#fff;background:#2F4156;cursor:pointer;display:inline-flex;align-items:center">Verify</a>
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div style="padding:48px 24px;text-align:center;color:#567C8D">
+                    <div style="font-size:32px;margin-bottom:8px">📦</div>
+                    <div style="font-size:16px;font-weight:600;color:#2F4156">No Products Owned Yet</div>
+                    <div style="font-size:13px;margin-top:4px">Products assigned to you by sellers will appear here.</div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="stat-card">
+      <!-- 2. My Products Tab -->
+      <div id="tabMyProducts" class="tab-pane" style="gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px">
+          {% if products %}
+            {% for p in products %}
+              <div class="card-hover" style="background:#fff;border:1px solid #C8D9E6;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+                <div style="padding:10px 10px 0">
+                  {% if p[5] %}
+                  <img src="{{ url_for('static', filename='product_images/' ~ p[5]) }}" alt="" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border-radius:14px;background:#EAF1F6">
+                  {% else %}
+                  <div style="width:100%;aspect-ratio:4/3;border-radius:14px;background:#EAF1F6;display:flex;align-items:center;justify-content:center;font-size:36px;color:#567C8D">📦</div>
+                  {% endif %}
+                </div>
+                <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:15px;font-weight:600;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p[2] }}</span>
+                    <span style="font-size:13px;color:#567C8D">{{ p[1] }} · {{ p[3] }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <span style="padding:4px 10px;border-radius:8px;background:#EAF1F6;font-family:'JetBrains Mono',monospace;font-size:12px">#{{ p[4] }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#2F4156">
+                      <span style="width:6px;height:6px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 3px #C8D9E6"></span>Owned
+                    </span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:4px">
+                    <a href="/verify/{{ p[4] }}" class="action-btn" style="height:36px;border-radius:999px;background:#2F4156;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">Verify</a>
+                    <a href="/history/{{ p[4] }}" style="height:36px;display:flex;align-items:center;justify-content:center;border:1px solid #C8D9E6;border-radius:999px;font-size:13px;font-weight:600;color:#2F4156">History</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div style="grid-column:1/-1;padding:48px 24px;text-align:center;color:#567C8D">
+              <div style="font-size:32px;margin-bottom:8px">📦</div>
+              <div style="font-size:16px;font-weight:600;color:#2F4156">No Products in Your Vault</div>
+              <div style="font-size:13px;margin-top:4px">No verified products registered to your account yet.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
 
-        <h2>{{ verified_products }}</h2>
+      <!-- 3. Verify Tab -->
+      <div id="tabVerify" class="tab-pane" style="gap:20px">
+        <form id="verifyForm" onsubmit="handleVerifySubmit(event)" style="width:min(100%,440px);display:flex;flex-direction:column;gap:14px">
+          <input id="verifySerialInput" placeholder="Serial number" style="height:48px;padding:0 20px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;background:#fff;color:#2F4156;font-family:'JetBrains Mono',monospace">
+          <label style="height:160px;border:1px dashed #C8D9E6;border-radius:20px;background:#F6F9FB;display:flex;align-items:center;justify-content:center;font-size:14px;color:#567C8D;cursor:pointer;flex-direction:column;gap:8px">
+            <input type="file" id="verifyFileInput" accept="image/*" style="display:none" onchange="previewFile(event)">
+            <span id="fileDropText">Drop product photo or browse</span>
+          </label>
+          <button type="submit" class="action-btn" style="height:48px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28), 0 4px 14px -6px rgba(86,124,141,0.25)">Verify</button>
+          
+          <div id="verifySuccessBox" style="display:none;align-items:center;gap:12px;padding:16px 18px;border-radius:16px;background:#EAF1F6;border:1px solid #C8D9E6">
+            <span style="width:10px;height:10px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 4px #C8D9E6"></span>
+            <span style="font-size:14px;font-weight:600">Genuine product</span>
+          </div>
+        </form>
+      </div>
 
-        <p>Verified</p>
+      <!-- 4. Lookup Tab -->
+      <div id="tabLookup" class="tab-pane" style="gap:20px">
+        <div style="width:min(100%,440px);display:flex;flex-direction:column;gap:20px">
+          <form onsubmit="handleLookup(event)" style="display:flex;gap:8px;padding:6px 6px 6px 20px;background:#fff;border:1px solid #C8D9E6;border-radius:999px">
+            <input id="lookupInput" placeholder="Serial number, e.g. 1001" style="flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:14px;font-family:'JetBrains Mono',monospace;background:transparent;color:#2F4156">
+            <button type="submit" class="action-btn" style="height:40px;padding:0 20px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">Lookup</button>
+          </form>
 
-    </div>
+          <div id="lookupTrail" style="display:none;flex-direction:column;padding:8px 20px;border:1px solid #C8D9E6;border-radius:20px">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #EAF1F6">
+              <span style="width:8px;height:8px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 4px #C8D9E6"></span>
+              <div style="flex:1;display:flex;flex-direction:column">
+                <span style="font-size:14px;font-weight:600">Manufacturer</span>
+                <span style="font-size:12px;color:#567C8D">Registered</span>
+              </div>
+              <span id="trailDateMfg" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#567C8D"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #EAF1F6">
+              <span style="width:8px;height:8px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 4px #C8D9E6"></span>
+              <div style="flex:1;display:flex;flex-direction:column">
+                <span style="font-size:14px;font-weight:600">Seller</span>
+                <span style="font-size:12px;color:#567C8D">Received</span>
+              </div>
+              <span id="trailDateSeller" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#567C8D"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 0">
+              <span style="width:8px;height:8px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 4px #C8D9E6"></span>
+              <div style="flex:1;display:flex;flex-direction:column">
+                <span style="font-size:14px;font-weight:600">Consumer</span>
+                <span style="font-size:12px;color:#567C8D">Purchased</span>
+              </div>
+              <span id="trailDateConsumer" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#567C8D"></span>
+            </div>
+          </div>
 
-    <div class="stat-card">
+          <div id="lookupEmpty" style="display:none;font-size:14px;color:#567C8D;text-align:center">
+            No record found for this serial number.
+          </div>
+        </div>
+      </div>
 
-        <h2>{{ fake_products }}</h2>
-
-        <p>Fake Detected</p>
-
-    </div>
-
-    <div class="stat-card">
-
-        <h2>{{ blockchain_transactions }}</h2>
-
-        <p>Blockchain TX</p>
-
-    </div>
-
+    </main>
+  </div>
 </div>
 
-<div class="dashboard-grid">
+<script>
+  // Tab switching
+  function switchView(viewName) {
+    document.getElementById('viewTitle').textContent = viewName;
 
-    <div class="dashboard-card">
+    // Nav active styles
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if (btn.textContent.trim() === viewName) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
 
-        <h2>📦</h2>
+    // Pane display
+    const paneMap = {
+      'Overview': 'tabOverview',
+      'My Products': 'tabMyProducts',
+      'Verify': 'tabVerify',
+      'Lookup': 'tabLookup'
+    };
 
-        <h3>My Products</h3>
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(paneMap[viewName]);
+    if (target) target.classList.add('active');
+  }
 
-        <p>
-            View products assigned to you.
-        </p>
+  // Filter table rows in Overview tab
+  function filterTable() {
+    const q = document.getElementById('searchProducts').value.toLowerCase().trim();
+    document.querySelectorAll('.table-row').forEach(row => {
+      const data = row.getAttribute('data-search') || '';
+      row.style.display = (!q || data.includes(q)) ? 'grid' : 'none';
+    });
+  }
 
-        <a href="/consumer/products">
-            <button>View Products</button>
-        </a>
+  // Verify preview & submit
+  function previewFile(e) {
+    const f = e.target.files[0];
+    if (f) {
+      document.getElementById('fileDropText').textContent = f.name;
+    }
+  }
 
-    </div>
+  function handleVerifySubmit(e) {
+    e.preventDefault();
+    const serial = document.getElementById('verifySerialInput').value.trim();
+    if (serial) {
+      // If serial provided, go to actual verify route
+      window.location.href = '/verify/' + encodeURIComponent(serial);
+    } else {
+      document.getElementById('verifySuccessBox').style.display = 'flex';
+    }
+  }
 
-    <div class="dashboard-card">
+  // Lookup timeline trail
+  const PRODUCT_DATA = {
+    '1001': { d1: '2026-10-26 07:02:40', d2: '2026-10-26 07:06:09' },
+    '1012': { d1: '2026-11-02 04:09:34', d2: '2026-11-02 04:10:49' },
+    '1080': { d1: '2026-11-02 04:26:28', d2: '2026-11-02 04:27:25' },
+    '1234567': { d1: '2026-11-02 04:32:02', d2: '2026-11-02 04:33:17' },
+    '576858': { d1: '2026-11-02 04:54:30', d2: '2026-11-02 05:08:58' },
+    '1200': { d1: '2026-11-08 08:11:08', d2: '2026-11-08 08:11:26' }
+  };
 
-        <h2>🤖</h2>
+  function handleLookup(e) {
+    e.preventDefault();
+    const s = document.getElementById('lookupInput').value.trim().replace('#','');
+    const trailBox = document.getElementById('lookupTrail');
+    const emptyBox = document.getElementById('lookupEmpty');
 
-        <h3>AI Verification</h3>
-
-        <p>
-            Verify product using MobileNetV2.
-        </p>
-
-        <a href="/consumer/products">
-            <button>Verify</button>
-        </a>
-
-    </div>
-
-
-    <div class="dashboard-card">
-
-        <h2>🚪</h2>
-
-        <h3>Logout</h3>
-
-        <p>
-            Logout safely.
-        </p>
-
-        <a href="/consumer/logout">
-            <button class="danger-btn">
-                Logout
-            </button>
-        </a>
-
-    </div>
-
-</div>
-
-{% endblock %}
+    if (s && PRODUCT_DATA[s]) {
+      const p = PRODUCT_DATA[s];
+      document.getElementById('trailDateMfg').textContent = p.d1;
+      document.getElementById('trailDateSeller').textContent = p.d1;
+      document.getElementById('trailDateConsumer').textContent = p.d2;
+      trailBox.style.display = 'flex';
+      emptyBox.style.display = 'none';
+    } else {
+      trailBox.style.display = 'none';
+      emptyBox.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

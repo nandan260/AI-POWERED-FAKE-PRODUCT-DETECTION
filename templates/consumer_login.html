@@ -1,29 +1,186 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  input::placeholder {
+    color: #567C8D;
+  }
+  .role-btn {
+    height: 36px;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #567C8D;
+    transition: all 0.15s ease;
+  }
+  .role-btn.active {
+    background: #fff;
+    color: #2F4156;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .btn-hover:hover {
+    background: #567C8D !important;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;padding:0;display:flex;flex-direction:column">
+  <div style="position:relative;flex:1;min-height:100vh;background:#fff;overflow:hidden;display:flex;flex-direction:column">
+    
+    <!-- Canvas Particle Background -->
+    <canvas id="bgCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
 
-{% block title %}Consumer Login{% endblock %}
+    <!-- Top Navigation Bar -->
+    <nav style="position:relative;display:flex;justify-content:center;align-items:center;gap:32px;padding:18px 24px;flex-wrap:wrap">
+      <a href="/" style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2F4156"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        ProductGuard
+      </a>
+      <a href="/" style="font-size:14px;color:#567C8D">Home</a>
+    </nav>
 
-{% block content %}
-<div class="auth-page">
-<div class="card">
+    <!-- Main Login Area -->
+    <main style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:16px 20px">
+      <div style="width:min(100%,380px);display:flex;flex-direction:column;gap:20px">
+        <h1 style="margin:0;text-align:center;font-size:36px;line-height:1.1;font-weight:600;letter-spacing:-0.035em">
+          <span style="display:block;color:#567C8D">Welcome</span>
+          <span style="display:block">Sign in</span>
+        </h1>
 
-<h2>Consumer Login</h2>
+        <!-- Role Selectors -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);padding:4px;background:#F5EFEB;border-radius:999px">
+          <button type="button" class="role-btn" id="btnManufacturer" onclick="setRole('Manufacturer')">Manufacturer</button>
+          <button type="button" class="role-btn" id="btnSeller" onclick="setRole('Seller')">Seller</button>
+          <button type="button" class="role-btn active" id="btnConsumer" onclick="setRole('Consumer')">Consumer</button>
+        </div>
 
-<form method="POST">
+        <!-- Login Form -->
+        <form id="loginForm" method="POST" action="/consumer/login" style="display:flex;flex-direction:column;gap:12px">
+          <input type="email" name="email" required placeholder="Email" style="height:48px;padding:0 20px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;background:#fff;color:#2F4156">
+          
+          <div style="display:flex;align-items:center;height:48px;padding:0 8px 0 20px;border:1px solid #C8D9E6;border-radius:999px;background:#fff">
+            <input type="password" id="pwInput" name="password" required placeholder="Password" style="flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:14px;background:transparent;color:#2F4156">
+            <button type="button" id="pwToggleBtn" onclick="togglePw()" style="height:32px;padding:0 12px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:600;color:#567C8D;cursor:pointer">Show</button>
+          </div>
 
-    <label>Email</label>
-    <input type="email" name="email" required>
+          <button type="submit" id="submitBtn" class="btn-hover" style="margin-top:4px;height:48px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28), 0 4px 14px -6px rgba(86,124,141,0.25)">Sign in as Consumer</button>
+        </form>
 
-    <label>Password</label>
-    <input type="password" name="password" required>
+        <!-- Register Link -->
+        <div style="display:flex;justify-content:center;gap:6px;font-size:13px;color:#567C8D">
+          <span>New here?</span>
+          <a href="/consumer/register" id="createAccountLink" style="font-weight:600">Create account</a>
+        </div>
+      </div>
+    </main>
 
-    <input type="submit" value="Login">
-
-</form>
-
-<br>
-
-<a href="/consumer/register">Create New Account</a>
-
+  </div>
 </div>
-</div>
-{% endblock %}
+
+<script>
+  let currentRole = 'Consumer';
+  const roleEndpoints = {
+    'Manufacturer': '/manufacturer/login',
+    'Seller': '/seller/login',
+    'Consumer': '/consumer/login'
+  };
+  const registerEndpoints = {
+    'Manufacturer': '/manufacturer/register',
+    'Seller': '/seller/register',
+    'Consumer': '/consumer/register'
+  };
+
+  function setRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn' + role).classList.add('active');
+    document.getElementById('loginForm').action = roleEndpoints[role];
+    document.getElementById('submitBtn').textContent = 'Sign in as ' + role;
+    document.getElementById('createAccountLink').href = registerEndpoints[role];
+  }
+
+  function togglePw() {
+    const pw = document.getElementById('pwInput');
+    const btn = document.getElementById('pwToggleBtn');
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      btn.textContent = 'Hide';
+    } else {
+      pw.type = 'password';
+      btn.textContent = 'Show';
+    }
+  }
+
+  // Canvas particle background
+  (function() {
+    const c = document.getElementById('bgCanvas');
+    if (!c) return;
+
+    function draw() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = c.offsetWidth;
+      const h = c.offsetHeight;
+      c.width = w * dpr;
+      c.height = h * dpr;
+      const x = c.getContext('2d');
+      x.scale(dpr, dpr);
+      x.fillStyle = '#2F4156';
+
+      let seed = 11;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      const blobs = [
+        { cx: w * 0.06, cy: h * 0.5, rx: w * 0.2, ry: h * 0.22 },
+        { cx: w * 0.95, cy: h * 0.55, rx: w * 0.18, ry: h * 0.2 }
+      ];
+
+      for (let py = 0; py < h; py += 7) {
+        for (let px = 0; px < w; px += 7) {
+          let d = 0;
+          for (const b of blobs) {
+            const dx = (px - b.cx) / b.rx;
+            const dy = (py - b.cy) / b.ry;
+            d = Math.max(d, 1 - Math.sqrt(dx * dx + dy * dy));
+          }
+          d += Math.sin(px * 0.02 + py * 0.05) * 0.12;
+          if (d <= 0 || rnd() > d * 1.6) continue;
+          x.globalAlpha = Math.min(1, d * 1.5);
+          x.beginPath();
+          x.arc(px, py, 0.6 + Math.min(1, d) * 1.6, 0, 7);
+          x.fill();
+        }
+      }
+    }
+
+    window.addEventListener('resize', draw);
+    draw();
+  })();
+</script>
+</body>
+</html>

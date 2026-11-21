@@ -1,83 +1,160 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assign Product to Consumer - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  .nav-btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #567C8D;
+    background: transparent;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover {
+    background: #F5EFEB;
+    color: #2F4156;
+  }
+  .nav-btn.active {
+    background: #2F4156;
+    color: #fff;
+  }
+  .select-box {
+    width: 100%;
+    height: 48px;
+    padding: 0 18px;
+    border: 1px solid #C8D9E6;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #2F4156;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  .select-box:focus {
+    border-color: #2F4156;
+    box-shadow: 0 0 0 3px rgba(47,65,86,0.08);
+  }
+  .action-btn:hover {
+    background: #567C8D !important;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;flex-direction:column">
 
-{% block title %}Assign Consumer{% endblock %}
+  <!-- Header -->
+  <header style="height:70px;border-bottom:1px solid #EAF1F6;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#fff">
+    <div style="display:flex;align-items:center;gap:28px">
+      <a href="/" style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em">
+        <div style="width:32px;height:32px;border-radius:999px;background:#2F4156;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        </div>
+        ProductGuard
+      </a>
 
-{% block content %}
+      <nav style="display:flex;align-items:center;gap:8px">
+        <a href="/seller/dashboard" class="nav-btn">Dashboard</a>
+        <a href="/seller/assigned-products" class="nav-btn">Inventory</a>
+        <a href="/seller/assign-consumer" class="nav-btn active">Assign Buyer</a>
+        <a href="/history" class="nav-btn">Ledger</a>
+      </nav>
+    </div>
 
-<div class="register-container">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#EAF1F6;font-size:12px;font-weight:600;color:#2F4156">
+        <span style="width:7px;height:7px;border-radius:999px;background:#2F4156"></span>
+        Seller Portal
+      </span>
+      <a href="/seller/logout" style="font-size:13px;font-weight:600;color:#567C8D;padding:6px 12px">Logout</a>
+    </div>
+  </header>
 
-<div class="register-card">
+  <!-- Content -->
+  <main style="flex:1;padding:40px 24px;background:#F6F9FB;display:flex;align-items:center;justify-content:center">
+    <div style="width:min(100%,520px);display:flex;flex-direction:column;gap:24px">
+      
+      <div style="text-align:center">
+        <h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.03em;color:#2F4156">
+          Assign Product to Consumer
+        </h1>
+        
+      </div>
 
-<h1>
+      <!-- Form Card -->
+      <div style="background:#fff;border:1px solid #EAF1F6;border-radius:20px;padding:32px;box-shadow:0 8px 30px rgba(47,65,86,0.04);display:flex;flex-direction:column;gap:20px">
+        
+        <form action="/seller/assign-product-consumer" method="POST" style="display:flex;flex-direction:column;gap:18px">
+          
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:#2F4156;margin-bottom:8px">Select In-Stock Product</label>
+            <select name="product_id" class="select-box" required>
+              {% if products %}
+                {% for product in products %}
+                <option value="{{ product[0] }}">
+                  {{ product[2] }} • SN: {{ product[4] }}
+                </option>
+                {% endfor %}
+              {% else %}
+                <option value="" disabled selected>No in-stock products available</option>
+              {% endif %}
+            </select>
+          </div>
 
-👤 Assign Product To Consumer
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:#2F4156;margin-bottom:8px">Select Verified Consumer</label>
+            <select name="consumer_id" class="select-box" required>
+              {% for consumer in consumers %}
+              <option value="{{ consumer[0] }}">
+                {{ consumer[1] }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
 
-</h1>
+          <button type="submit" class="action-btn" style="margin-top:4px;height:48px;border:0;border-radius:999px;background:#2F4156;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.3);transition:all 0.15s ease">
+            ✓ Finalize Sale & Transfer to Consumer
+          </button>
 
-<form
-action="/seller/assign-product-consumer"
-method="POST">
+          <a href="/seller/dashboard" style="text-align:center;font-size:13px;font-weight:600;color:#567C8D;margin-top:2px">
+            ← Cancel and return to Dashboard
+          </a>
 
-<label>
+        </form>
 
-Select Product
+      </div>
 
-</label>
-
-<select
-name="product_id">
-
-{% for product in products %}
-
-<option
-value="{{ product[0] }}">
-
-{{ product[2] }}
-
--
-
-{{ product[4] }}
-
-</option>
-
-{% endfor %}
-
-</select>
-
-<label>
-
-Select Consumer
-
-</label>
-
-<select
-name="consumer_id">
-
-{% for consumer in consumers %}
-
-<option
-value="{{ consumer[0] }}">
-
-{{ consumer[1] }}
-
-</option>
-
-{% endfor %}
-
-</select>
-
-<br><br>
-
-<button>
-
-Assign Product
-
-</button>
-
-</form>
+    </div>
+  </main>
 
 </div>
-
-</div>
-
-{% endblock %}
+</body>
+</html>

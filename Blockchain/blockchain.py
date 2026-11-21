@@ -57,13 +57,13 @@ def register_product(serial_no, manufacturer):
 
 def assign_seller(serial_no, seller):
     return send_transaction(
-        contract.functions.assignSeller(serial_no, seller)
+        contract.functions.assignSeller(str(serial_no), str(seller))
     )
 
 
 def assign_consumer(serial_no, consumer):
     return send_transaction(
-        contract.functions.assignConsumer(serial_no, consumer)
+        contract.functions.assignConsumer(str(serial_no), str(consumer))
     )
 
 

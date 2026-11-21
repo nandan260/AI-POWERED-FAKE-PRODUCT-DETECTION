@@ -1,104 +1,292 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register Product - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  .nav-btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #567C8D;
+    background: transparent;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover {
+    background: #F5EFEB;
+    color: #2F4156;
+  }
+  .nav-btn.active {
+    background: #2F4156;
+    color: #fff;
+  }
+  .form-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 18px;
+    border: 1px solid #C8D9E6;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #2F4156;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .form-input:focus {
+    border-color: #2F4156;
+    box-shadow: 0 0 0 3px rgba(47,65,86,0.1);
+  }
+  .form-input::placeholder {
+    color: #567C8D;
+    opacity: 0.8;
+  }
+  .dropzone {
+    border: 2px dashed #C8D9E6;
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #F5EFEB;
+    transition: all 0.2s ease;
+  }
+  .dropzone:hover {
+    border-color: #567C8D;
+    background: #EAF1F6;
+  }
+  .action-btn:hover {
+    background: #567C8D !important;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;padding:24px;display:flex">
+  <div style="flex:1;background:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;min-width:0;box-shadow:0 12px 32px rgba(47,65,86,0.06)">
+    
+    <!-- Top Navigation -->
+    <header style="height:72px;border-bottom:1px solid #C8D9E6;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:28px">
+        <a href="/" style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em">
+          <div style="width:32px;height:32px;border-radius:999px;background:#2F4156;display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+          </div>
+          ProductGuard
+        </a>
 
-{% block title %}Register Product{% endblock %}
+        <nav style="display:flex;align-items:center;gap:8px">
+          <a href="/manufacturer/dashboard" class="nav-btn">Dashboard</a>
+          <a href="/register" class="nav-btn active">Register Product</a>
+          <a href="/history" class="nav-btn">Blockchain Ledger</a>
+        </nav>
+      </div>
 
-{% block content %}
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#EAF1F6;font-size:12px;font-weight:600;color:#2F4156">
+          <span style="width:7px;height:7px;border-radius:999px;background:#2F4156"></span>
+          Manufacturer Portal
+        </span>
+        <a href="/logout" style="font-size:13px;font-weight:600;color:#567C8D;padding:6px 12px">Sign out</a>
+      </div>
+    </header>
 
-<div class="register-container">
+    <!-- Main Workspace Content -->
+    <main style="flex:1;overflow-y:auto;padding:32px 36px;background:#F5EFEB">
+      <div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:28px">
+        
+        <!-- Header Banner -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+          <div>
+            <h1 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.03em;color:#2F4156">Register New Product</h1>
+            
+          </div>
+          <a href="/manufacturer/dashboard" style="height:38px;padding:0 18px;border-radius:999px;background:#fff;border:1px solid #C8D9E6;font-size:13px;font-weight:600;color:#2F4156;display:inline-flex;align-items:center;gap:6px">
+            ← Back to Dashboard
+          </a>
+        </div>
 
-    <div class="register-card">
+        <!-- Two Column Grid -->
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:24px;align-items:start">
+          
+          <!-- Left: Registration Form Card -->
+          <div style="background:#fff;border-radius:20px;padding:32px;box-shadow:0 4px 20px rgba(47,65,86,0.04);display:flex;flex-direction:column;gap:24px">
+            <div style="display:flex;align-items:center;gap:10px;padding-bottom:18px;border-bottom:1px solid #F0F4F8">
+              <div style="width:36px;height:36px;border-radius:10px;background:#F5EFEB;display:flex;align-items:center;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F4156" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+              <div>
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:#2F4156">Product Metadata</h3>
+                
+              </div>
+            </div>
 
-        <h1>📦 Register New Product</h1>
+            <form action="/register" method="POST" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:18px">
+              
+              <!-- Brand Name -->
+              <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#2F4156;margin-bottom:8px">Brand Name</label>
+                <input type="text" id="brandInput" name="brand" class="form-input" placeholder="e.g. Nike, Apple, Rolex" required oninput="updatePreview()">
+              </div>
 
-        <p class="subtitle">
-            Fill in the product details to register it on the platform.
-        </p>
+              <!-- Product Name -->
+              <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#2F4156;margin-bottom:8px">Product Name</label>
+                <input type="text" id="nameInput" name="product_name" class="form-input" placeholder="e.g. Air Jordan 1 Retro High OG" required oninput="updatePreview()">
+              </div>
 
-        <form action="/register"
-              method="POST"
-              enctype="multipart/form-data">
+              <!-- Model Identifier -->
+              <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#2F4156;margin-bottom:8px">Model Identifier</label>
+                <input type="text" id="modelInput" name="model_name" class="form-input" placeholder="e.g. AJ1-CHICAGO-2024" required oninput="updatePreview()">
+              </div>
 
-            <label>Brand</label>
+              <!-- Serial Number with Auto Generate -->
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <label style="font-size:13px;font-weight:600;color:#2F4156">Unique Serial Number</label>
+                  <button type="button" onclick="generateSerial()" style="border:0;background:none;color:#567C8D;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px">
+                    ⚡ Auto-generate
+                  </button>
+                </div>
+                <input type="text" id="serialInput" name="serial_no" class="form-input" style="font-family:'JetBrains Mono',monospace" placeholder="e.g. SN-9824-NK-2026" required oninput="updatePreview()">
+              </div>
 
-            <input
-                type="text"
-                name="brand"
-                placeholder="Enter Brand Name"
-                required>
+              <!-- Original Product Image Upload -->
+              <div>
+                <label style="display:block;font-size:13px;font-weight:600;color:#2F4156;margin-bottom:8px">Original Product Image (AI Reference)</label>
+                <input type="file" id="imageInput" name="original_image" accept="image/*" required style="display:none" onchange="handleFile(this)">
+                
+                <div class="dropzone" id="dropArea" onclick="document.getElementById('imageInput').click()">
+                  <div style="width:44px;height:44px;border-radius:12px;background:#fff;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(47,65,86,0.08)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F4156" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  </div>
+                  <div id="dropText" style="font-size:14px;font-weight:600;color:#2F4156;margin-bottom:4px">Click or drag image here to upload</div>
+                  <div id="fileDetail" style="font-size:12px;color:#567C8D">PNG, JPG, or WEBP up to 10MB</div>
+                </div>
+              </div>
 
-            <label>Product Name</label>
+              <!-- Submit Button -->
+              <div style="margin-top:12px">
+                <button type="submit" class="action-btn" style="width:100%;height:48px;border:0;border-radius:999px;background:#2F4156;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 18px -6px rgba(47,65,86,0.3);transition:all 0.15s ease">
+                  <span>🚀 Register Product to Blockchain</span>
+                </button>
+              </div>
 
-            <input
-                type="text"
-                name="product_name"
-                placeholder="Enter Product Name"
-                required>
+            </form>
+          </div>
 
-            <label>Model Name</label>
+          <!-- Right: Live Preview Card -->
+          <div style="display:flex;flex-direction:column;gap:20px;position:sticky;top:24px">
+            
+            <div style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(47,65,86,0.04);display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:14px;font-weight:700;color:#2F4156">Registry Card Preview</span>
+                <span style="padding:4px 10px;border-radius:999px;background:#EAF1F6;color:#2F4156;font-size:11px;font-weight:600">LIVE PREVIEW</span>
+              </div>
 
-            <input
-                type="text"
-                name="model_name"
-                placeholder="Enter Model Name"
-                required>
+              <!-- Product Preview Image -->
+              <div style="width:100%;height:220px;border-radius:14px;overflow:hidden;background:#F5EFEB;border:1px solid #C8D9E6;display:flex;align-items:center;justify-content:center;position:relative">
+                <img id="previewImg" src="" alt="Product Preview" style="width:100%;height:100%;object-fit:cover;display:none">
+                <div id="previewPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:8px;color:#567C8D">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  <span style="font-size:12px;font-weight:500">No image uploaded yet</span>
+                </div>
+                <div style="position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);font-size:11px;font-weight:700;color:#2F4156;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+                  GENUINE SEAL
+                </div>
+              </div>
 
-            <label>Serial Number</label>
+              <!-- Product Info Meta -->
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div id="prevBrand" style="font-size:12px;font-weight:700;color:#567C8D;text-transform:uppercase;letter-spacing:0.04em">BRAND NAME</div>
+                <div id="prevName" style="font-size:18px;font-weight:700;color:#2F4156;line-height:1.2">Sample Product Title</div>
+              </div>
 
-            <input
-                type="text"
-                name="serial_no"
-                placeholder="Unique Serial Number"
-                required>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <div style="padding:6px 12px;border-radius:8px;background:#F5EFEB;font-family:'JetBrains Mono',monospace;font-size:11px;color:#2F4156">
+                  <span style="color:#567C8D">MODEL:</span> <span id="prevModel">NOT SET</span>
+                </div>
+                <div style="padding:6px 12px;border-radius:8px;background:#F5EFEB;font-family:'JetBrains Mono',monospace;font-size:11px;color:#2F4156">
+                  <span style="color:#567C8D">SN:</span> <span id="prevSerial">NOT SET</span>
+                </div>
+              </div>
 
-            <label>Original Product Image</label>
 
-            <input
-                type="file"
-                id="imageInput"
-                name="original_image"
-                accept="image/*"
-                required>
+            </div>
 
-            <br><br>
 
-            <img
-                id="previewImage"
-                class="preview-image"
-                src=""
-                style="display:none;">
 
-            <br>
+          </div>
 
-            <button type="submit">
-                🚀 Register Product
-            </button>
+        </div>
 
-        </form>
+      </div>
+    </main>
 
-    </div>
-
+  </div>
 </div>
 
 <script>
+  function handleFile(input) {
+    const file = input.files[0];
+    if (file) {
+      const preview = document.getElementById('previewImg');
+      const placeholder = document.getElementById('previewPlaceholder');
+      const dropText = document.getElementById('dropText');
+      const fileDetail = document.getElementById('fileDetail');
+      
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
 
-const input=document.getElementById("imageInput");
-
-const preview=document.getElementById("previewImage");
-
-input.onchange=function(){
-
-    const file=this.files[0];
-
-    if(file){
-
-        preview.src=URL.createObjectURL(file);
-
-        preview.style.display="block";
-
+      dropText.textContent = file.name;
+      fileDetail.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB • Image Loaded';
     }
+  }
 
-}
+  function updatePreview() {
+    const brand = document.getElementById('brandInput').value.trim();
+    const name = document.getElementById('nameInput').value.trim();
+    const model = document.getElementById('modelInput').value.trim();
+    const serial = document.getElementById('serialInput').value.trim();
 
+    document.getElementById('prevBrand').textContent = brand || 'BRAND NAME';
+    document.getElementById('prevName').textContent = name || 'Sample Product Title';
+    document.getElementById('prevModel').textContent = model || 'NOT SET';
+    document.getElementById('prevSerial').textContent = serial || 'NOT SET';
+  }
+
+  function generateSerial() {
+    const rand = Math.floor(100000 + Math.random() * 900000);
+    const prefix = (document.getElementById('brandInput').value.trim().slice(0, 2).toUpperCase() || 'PG');
+    const serial = prefix + '-' + rand;
+    document.getElementById('serialInput').value = serial;
+    updatePreview();
+  }
 </script>
-
-{% endblock %}
+</body>
+</html>

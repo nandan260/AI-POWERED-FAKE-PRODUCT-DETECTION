@@ -1,111 +1,445 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seller Dashboard - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  input::placeholder {
+    color: #567C8D;
+  }
+  .nav-btn {
+    height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    text-align: left;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    color: #567C8D;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+  }
+  .nav-btn:hover {
+    background: #EAF1F6;
+    color: #2F4156;
+  }
+  .nav-btn.active {
+    background: #EAF1F6;
+    color: #2F4156;
+    font-weight: 600;
+  }
+  .filter-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #567C8D;
+    transition: all 0.15s;
+  }
+  .filter-btn.active {
+    background: #fff;
+    color: #2F4156;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .action-btn:hover {
+    background: #567C8D !important;
+  }
+  .row-hover {
+    transition: background 0.15s;
+  }
+  .row-hover:hover {
+    background: #F6F9FB;
+  }
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.active {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;padding:24px;display:flex">
+  <div style="flex:1;min-height:calc(100vh - 48px);background:#fff;border-radius:20px;overflow:hidden;display:flex">
 
-{% block title %}Seller Dashboard{% endblock %}
+    <!-- Sidebar -->
+    <aside style="width:232px;flex-shrink:0;display:flex;flex-direction:column;padding:28px 16px 16px;border-right:1px solid #EAF1F6">
+      <a href="/" style="display:flex;align-items:center;gap:8px;padding:0 12px 28px;font-weight:700;font-size:15px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2F4156"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        ProductGuard
+      </a>
 
-{% block content %}
+      <!-- Menu links -->
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button type="button" class="nav-btn active" onclick="switchView('Overview')">Overview</button>
+        <button type="button" class="nav-btn" onclick="switchView('Inventory')">Inventory</button>
+        <button type="button" class="nav-btn" onclick="switchView('Assign Buyer')">Assign Buyer</button>
+        <button type="button" class="nav-btn" onclick="switchView('Ledger')">Ledger</button>
+      </div>
 
-<h1>🏪 Seller Dashboard</h1>
+      <!-- User footer -->
+      <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-top:1px solid #EAF1F6">
+        <div style="width:32px;height:32px;border-radius:999px;background:#2F4156;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">
+          {{ (shop_name[0] if shop_name else 'A') | upper }}
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <span style="font-size:13px;font-weight:600">{{ shop_name or 'ABC ELECTRONICS' }}</span>
+          <span style="font-size:12px;color:#567C8D">Seller</span>
+        </div>
+        <a href="/seller/logout" style="font-size:12px;color:#567C8D">Log out</a>
+      </div>
+    </aside>
 
-<p>
-Welcome,
-<b>{{ shop_name }}</b>
-</p>
+    <!-- Main Content Area -->
+    <main style="flex:1;min-width:0;display:flex;flex-direction:column;padding:28px 40px 40px;gap:32px">
+      <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.03em">
+          <span style="color:#567C8D">Seller</span> <span id="viewTitle">Overview</span>
+        </h1>
+        <button type="button" onclick="switchView('Assign Buyer')" class="action-btn" style="height:40px;padding:0 20px;white-space:nowrap;flex-shrink:0;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28), 0 4px 14px -6px rgba(86,124,141,0.25)">Assign buyer</button>
+      </header>
 
-<br>
-<div class="stats-container">
+      <!-- 1. Overview Tab -->
+      <div id="tabOverview" class="tab-pane active" style="gap:32px">
+        <!-- 4 Top Stat Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Total handled</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ total_handled }}</span>
+          </div>
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">In stock</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ in_stock_count }}</span>
+          </div>
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Flagged</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">0</span>
+          </div>
+          <div style="padding:20px 22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:14px">
+            <span style="font-size:13px;color:#567C8D">Seller txs</span>
+            <span style="font-size:36px;font-weight:600;letter-spacing:-0.03em;line-height:1">{{ seller_txs }}</span>
+          </div>
+        </div>
 
-    <div class="stat-card">
+        <!-- Supply chain -->
+        <div style="padding:22px;border:1px solid #C8D9E6;border-radius:16px;display:flex;flex-direction:column;gap:18px">
+          <span style="font-size:15px;font-weight:600">Supply chain</span>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span style="font-weight:600">With consumer</span>
+                <span style="color:#567C8D;font-variant-numeric:tabular-nums">{{ sold_to_consumer }}</span>
+              </div>
+              <div style="height:6px;border-radius:999px;background:#EAF1F6;overflow:hidden">
+                <div style="height:100%;border-radius:999px;background:#2F4156;width:{{ ((sold_to_consumer / total_handled) * 100)|round if total_handled > 0 else 0 }}%"></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span style="font-weight:600">In seller stock</span>
+                <span style="color:#567C8D;font-variant-numeric:tabular-nums">{{ in_stock_count }}</span>
+              </div>
+              <div style="height:6px;border-radius:999px;background:#EAF1F6;overflow:hidden">
+                <div style="height:100%;border-radius:999px;background:#567C8D;width:{{ ((in_stock_count / total_handled) * 100)|round if total_handled > 0 else 0 }}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <h2>{{ total_products }}</h2>
+        <!-- Products table with filters and search -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div style="display:flex;gap:4px;padding:4px;background:#EAF1F6;border-radius:999px">
+              <button type="button" class="filter-btn active" onclick="setFilter('All', this)">All</button>
+              <button type="button" class="filter-btn" onclick="setFilter('Seller', this)">In Stock</button>
+              <button type="button" class="filter-btn" onclick="setFilter('Consumer', this)">With Consumer</button>
+            </div>
+            <input id="searchOverview" oninput="filterOverviewTable()" placeholder="Search products" style="height:40px;width:min(100%,260px);padding:0 18px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;color:#2F4156">
+          </div>
 
-        <p>Total Products</p>
+          <div style="border:1px solid #C8D9E6;border-radius:16px;overflow-x:auto">
+            <div style="min-width:780px">
+              <!-- Header -->
+              <div style="display:grid;grid-template-columns:minmax(240px,2fr) minmax(120px,1fr) minmax(160px,1fr) 140px;gap:16px;padding:12px 20px;font-size:12px;color:#567C8D;font-weight:600;border-bottom:1px solid #EAF1F6">
+                <span>Product</span>
+                <span>Serial</span>
+                <span>Status</span>
+                <span></span>
+              </div>
 
-    </div>
+              <!-- Rows -->
+              <div id="overviewRows">
+                {% if products %}
+                  {% for p in products %}
+                    {% set is_consumer = (p[7] == 'Consumer') %}
+                    {% set is_seller = (p[7] == 'Seller') %}
+                    {% set stage_name = 'Consumer' if is_consumer else ('Seller' if is_seller else 'Registered') %}
+                    {% set status_text = 'With consumer' if is_consumer else ('In Seller Stock' if is_seller else p[6]) %}
+                    {% set search_data = (p[2] ~ ' ' ~ p[1] ~ ' ' ~ p[3] ~ ' ' ~ p[4]) | lower %}
+                    <div class="row-hover overview-row" data-stage="{{ stage_name }}" data-search="{{ search_data }}" style="display:grid;grid-template-columns:minmax(240px,2fr) minmax(120px,1fr) minmax(160px,1fr) 140px;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid #EAF1F6;font-size:14px">
+                      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+                        {% if p[5] %}
+                        <img src="{{ url_for('static', filename='product_images/' ~ p[5]) }}" alt="" style="width:48px;height:48px;flex-shrink:0;border-radius:12px;object-fit:cover;background:#fff;border:1px solid #C8D9E6;box-shadow:0 4px 10px -6px rgba(47,65,86,0.35)">
+                        {% else %}
+                        <div style="width:48px;height:48px;flex-shrink:0;border-radius:12px;background:#EAF1F6;display:flex;align-items:center;justify-content:center;color:#567C8D;font-size:18px">📦</div>
+                        {% endif %}
+                        <div style="display:flex;flex-direction:column;min-width:0">
+                          <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p[2] }}</span>
+                          <span style="font-size:12px;color:#567C8D">{{ p[1] }} · {{ p[3] }}</span>
+                        </div>
+                      </div>
+                      <span style="justify-self:start;padding:4px 10px;border-radius:8px;background:#EAF1F6;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2F4156;letter-spacing:0.02em">#{{ p[4] }}</span>
+                      <span style="justify-self:start;display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;background:#EAF1F6;color:#2F4156;border:1px solid #C8D9E6">
+                        <span style="width:6px;height:6px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 3px #C8D9E6"></span>{{ status_text }}
+                      </span>
+                      <div style="display:flex;gap:14px;justify-content:flex-end;font-size:13px;font-weight:600">
+                        <a href="/history/{{ p[4] }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;border:1px solid #C8D9E6;border-radius:999px;font-size:12px;font-weight:600;color:#2F4156;background:#fff">History</a>
+                        {% if is_seller %}
+                        <button type="button" onclick="quickAssign('{{ p[0] }}')" style="height:32px;border:0;background:transparent;padding:0;display:inline-flex;align-items:center;color:#2F4156;font-size:12px;font-weight:600;cursor:pointer">Assign</button>
+                        {% else %}
+                        <span style="height:32px;display:inline-flex;align-items:center;color:#567C8D;font-size:12px">Transferred</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div style="padding:48px 24px;text-align:center;color:#567C8D">
+                    <div style="font-size:32px;margin-bottom:8px">📦</div>
+                    <div style="font-size:16px;font-weight:600;color:#2F4156">No Products Assigned</div>
+                    <div style="font-size:13px;margin-top:4px">No products from manufacturer assigned to this seller yet.</div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="stat-card">
+      <!-- 2. Inventory Tab -->
+      <div id="tabInventory" class="tab-pane" style="gap:16px">
+        <input id="searchInventory" oninput="filterInventoryTable()" placeholder="Search inventory" style="align-self:flex-end;height:40px;width:min(100%,260px);padding:0 18px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;color:#2F4156">
+        <div style="border:1px solid #C8D9E6;border-radius:16px;overflow-x:auto">
+          <div style="min-width:880px">
+            <!-- Header -->
+            <div style="display:grid;grid-template-columns:90px minmax(200px,1.6fr) minmax(120px,1fr) minmax(110px,1fr) minmax(140px,1fr) 100px;gap:16px;align-items:center;padding:12px 20px;font-size:12px;color:#567C8D;font-weight:600;border-bottom:1px solid #EAF1F6">
+              <span>Brand</span>
+              <span>Product</span>
+              <span>Model</span>
+              <span>Serial</span>
+              <span>Status</span>
+              <span></span>
+            </div>
 
-        <h2>{{ verified_products }}</h2>
+            <div id="inventoryRows">
+              {% if products %}
+                {% for p in products %}
+                  {% set is_consumer = (p[7] == 'Consumer') %}
+                  {% set is_seller = (p[7] == 'Seller') %}
+                  {% set status_text = 'With consumer' if is_consumer else ('In Seller Stock' if is_seller else p[6]) %}
+                  {% set search_data = (p[1] ~ ' ' ~ p[2] ~ ' ' ~ p[3] ~ ' ' ~ p[4]) | lower %}
+                  <div class="row-hover inv-row" data-search="{{ search_data }}" style="display:grid;grid-template-columns:90px minmax(200px,1.6fr) minmax(120px,1fr) minmax(110px,1fr) minmax(140px,1fr) 100px;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid #EAF1F6;font-size:14px">
+                    <span style="color:#567C8D">{{ p[1] }}</span>
+                    <div style="display:flex;align-items:center;gap:12px;min-width:0">
+                      {% if p[5] %}
+                      <img src="{{ url_for('static', filename='product_images/' ~ p[5]) }}" alt="" style="width:48px;height:48px;flex-shrink:0;border-radius:12px;object-fit:cover;background:#fff;border:1px solid #C8D9E6;box-shadow:0 4px 10px -6px rgba(47,65,86,0.35)">
+                      {% else %}
+                      <div style="width:48px;height:48px;flex-shrink:0;border-radius:12px;background:#EAF1F6;display:flex;align-items:center;justify-content:center;color:#567C8D;font-size:18px">📦</div>
+                      {% endif %}
+                      <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p[2] }}</span>
+                    </div>
+                    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p[3] }}</span>
+                    <span style="justify-self:start;padding:4px 10px;border-radius:8px;background:#EAF1F6;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2F4156;letter-spacing:0.02em">#{{ p[4] }}</span>
+                    <span style="justify-self:start;display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;background:#EAF1F6;color:#2F4156;border:1px solid #C8D9E6">
+                      <span style="width:6px;height:6px;border-radius:999px;background:#2F4156;box-shadow:0 0 0 3px #C8D9E6"></span>{{ status_text }}
+                    </span>
+                    <div style="justify-self:end"><a href="/history/{{ p[4] }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;border:1px solid #C8D9E6;border-radius:999px;font-size:12px;font-weight:600;color:#2F4156;background:#fff">History</a></div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div style="padding:48px 24px;text-align:center;color:#567C8D">
+                  <div style="font-size:32px;margin-bottom:8px">📦</div>
+                  <div style="font-size:16px;font-weight:600;color:#2F4156">No Products Assigned</div>
+                  <div style="font-size:13px;margin-top:4px">No manufacturer products found in inventory.</div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <p>Verified</p>
+      <!-- 3. Assign Buyer Tab -->
+      <div id="tabAssignBuyer" class="tab-pane" style="gap:20px">
+        <form action="/seller/assign-product-consumer" method="POST" style="width:min(100%,440px);display:flex;flex-direction:column;gap:14px">
+          <label style="font-size:13px;font-weight:600;color:#567C8D">Select Product</label>
+          <select id="assignProductSelect" name="product_id" style="height:48px;padding:0 20px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;background:#fff;color:#2F4156" required>
+            {% if in_stock_products %}
+              {% for ip in in_stock_products %}
+              <option value="{{ ip[0] }}">{{ ip[1] }} · {{ ip[2] }} ({{ ip[3] }}) - #{{ ip[4] }}</option>
+              {% endfor %}
+            {% else %}
+              <option value="" disabled selected>No in-stock products available</option>
+            {% endif %}
+          </select>
 
-    </div>
+          <label style="font-size:13px;font-weight:600;color:#567C8D">Select Buyer / Consumer</label>
+          <select name="consumer_id" style="height:48px;padding:0 20px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;background:#fff;color:#2F4156" required>
+            {% if consumers %}
+              {% for consumer in consumers %}
+              <option value="{{ consumer[0] }}">{{ consumer[1] }}</option>
+              {% endfor %}
+            {% else %}
+              <option value="" disabled selected>No registered consumers</option>
+            {% endif %}
+          </select>
 
-    <div class="stat-card">
+          <button type="submit" class="action-btn" style="margin-top:8px;height:48px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28), 0 4px 14px -6px rgba(86,124,141,0.25)">Assign to buyer</button>
+        </form>
+      </div>
 
-        <h2>{{ fake_products }}</h2>
+      <!-- 4. Ledger Tab -->
+      <div id="tabLedger" class="tab-pane" style="gap:16px">
+        <input id="searchLedger" oninput="filterLedgerTable()" placeholder="Lookup serial" style="align-self:flex-end;height:40px;width:min(100%,260px);padding:0 18px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;color:#2F4156">
+        <div style="border:1px solid #C8D9E6;border-radius:16px;overflow-x:auto">
+          <div style="min-width:760px">
+            <div style="display:grid;grid-template-columns:100px 1fr 1fr 1fr 1.4fr 1.4fr;gap:16px;padding:12px 20px;font-size:12px;color:#567C8D;font-weight:600;border-bottom:1px solid #EAF1F6">
+              <span>Serial</span>
+              <span>Product</span>
+              <span>From</span>
+              <span>To</span>
+              <span>Date</span>
+              <span>Hash</span>
+            </div>
 
-        <p>Fake Detected</p>
+            <div id="ledgerRows">
+              {% if ledger_entries %}
+                {% for l in ledger_entries %}
+                  {% set short_hash = (l[7][:10] ~ '…' ~ l[7][-6:]) if l[7] and l[7]|length > 16 else (l[7] or 'N/A') %}
+                  <div class="row-hover ledger-row" data-serial="{{ l[1] }}" style="display:grid;grid-template-columns:100px 1fr 1fr 1fr 1.4fr 1.4fr;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid #EAF1F6;font-size:14px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:13px">#{{ l[1] }}</span>
+                    <span>{{ l[2] }} · {{ l[3] }}</span>
+                    <span style="color:#567C8D">{{ l[4] }}</span>
+                    <span style="color:#567C8D">{{ l[5] }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#567C8D">{{ l[6] }}</span>
+                    <span title="{{ l[7] or '' }}" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#567C8D">{{ short_hash }}</span>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div style="padding:48px 24px;text-align:center;color:#567C8D">
+                  <div style="font-size:16px;font-weight:600;color:#2F4156">No Ledger Records</div>
+                  <div style="font-size:13px;margin-top:4px">No blockchain transactions recorded yet.</div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
 
-    </div>
-
-    <div class="stat-card">
-
-        <h2>{{ blockchain_transactions }}</h2>
-
-        <p>Blockchain TX</p>
-
-    </div>
-
+    </main>
+  </div>
 </div>
 
-<div class="dashboard-grid">
+<script>
+  // Tab switching
+  function switchView(viewName) {
+    document.getElementById('viewTitle').textContent = viewName;
 
-    <div class="dashboard-card">
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if (btn.textContent.trim() === viewName) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
 
-        <h2>👤</h2>
+    const paneMap = {
+      'Overview': 'tabOverview',
+      'Inventory': 'tabInventory',
+      'Assign Buyer': 'tabAssignBuyer',
+      'Ledger': 'tabLedger'
+    };
 
-        <h3>Assign Consumer</h3>
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(paneMap[viewName]);
+    if (target) target.classList.add('active');
+  }
 
-        <p>Assign products to consumers.</p>
+  // Filter stage buttons in Overview
+  let currentFilter = 'All';
+  function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    filterOverviewTable();
+  }
 
-        <a href="/seller/assign-consumer">
-            <button>Assign Product</button>
-        </a>
+  function filterOverviewTable() {
+    const q = document.getElementById('searchOverview').value.toLowerCase().trim();
+    document.querySelectorAll('.overview-row').forEach(row => {
+      const stage = row.getAttribute('data-stage') || '';
+      const text = row.getAttribute('data-search') || '';
+      const matchFilter = (currentFilter === 'All') || (currentFilter === stage);
+      const matchQuery = !q || text.includes(q);
+      row.style.display = (matchFilter && matchQuery) ? 'grid' : 'none';
+    });
+  }
 
-    </div>
+  // Inventory filter
+  function filterInventoryTable() {
+    const q = document.getElementById('searchInventory').value.toLowerCase().trim();
+    document.querySelectorAll('.inv-row').forEach(row => {
+      const text = row.getAttribute('data-search') || '';
+      row.style.display = (!q || text.includes(q)) ? 'grid' : 'none';
+    });
+  }
 
-    <div class="dashboard-card">
+  // Ledger filter
+  function filterLedgerTable() {
+    const q = document.getElementById('searchLedger').value.trim();
+    document.querySelectorAll('.ledger-row').forEach(row => {
+      const serial = row.getAttribute('data-serial') || '';
+      row.style.display = (!q || serial.includes(q)) ? 'grid' : 'none';
+    });
+  }
 
-        <h2>📜</h2>
-
-        <h3>Assigned Products</h3>
-
-        <p>View products already assigned.</p>
-
-        <a href="/seller/assigned-products">
-            <button>View</button>
-        </a>
-
-    </div>
-
-    <div class="dashboard-card">
-
-        <h2>⛓</h2>
-
-        <h3>Blockchain History</h3>
-
-        <p>View blockchain transactions.</p>
-
-        <a href="/history">
-            <button>History</button>
-        </a>
-
-    </div>
-
-    <div class="dashboard-card">
-
-        <h2>🚪</h2>
-
-        <h3>Logout</h3>
-
-        <p>Exit your account securely.</p>
-
-       <a href="/seller/logout">
-            <button class="danger-btn">Logout</button>
-        </a>
-
-    </div>
-
-</div>
-
-{% endblock %}
+  // Quick assign from table row
+  function quickAssign(prodId) {
+    switchView('Assign Buyer');
+    const sel = document.getElementById('assignProductSelect');
+    if (sel) {
+      sel.value = prodId;
+    }
+  }
+</script>
+</body>
+</html>

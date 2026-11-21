@@ -1,13 +1,358 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Verification - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  .nav-btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #567C8D;
+    background: transparent;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover {
+    background: #EAF1F6;
+    color: #2F4156;
+  }
+  .nav-btn.active {
+    background: #2F4156;
+    color: #fff;
+  }
+  .action-btn {
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .action-btn:hover {
+    background: #567C8D !important;
+  }
+  .card-box {
+    background: #fff;
+    border: 1px solid #C8D9E6;
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .prod-card {
+    background: #fff;
+    border: 1px solid #EAF1F6;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .prod-card:hover {
+    transform: translateY(-3px);
+    border-color: #C8D9E6;
+    box-shadow: 0 16px 36px -12px rgba(47,65,86,0.15);
+  }
+  .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #EAF1F6;
+    font-size: 14px;
+  }
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+  .detail-label {
+    color: #567C8D;
+    font-weight: 500;
+  }
+  .detail-value {
+    font-weight: 600;
+    color: #2F4156;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;flex-direction:column">
 
-{% block title %}Verify Product{% endblock %}
+  <!-- Top Navigation Bar -->
+  <header style="height:70px;border-bottom:1px solid #EAF1F6;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#fff">
+    <div style="display:flex;align-items:center;gap:28px">
+      <a href="/" style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em">
+        <div style="width:32px;height:32px;border-radius:999px;background:#2F4156;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        </div>
+        ProductGuard
+      </a>
 
-{% block content %}
+      <nav style="display:flex;align-items:center;gap:8px">
+        <a href="/" class="nav-btn">Home</a>
+        <a href="/verify" class="nav-btn active">Verify</a>
+        <a href="/history" class="nav-btn">Blockchain Ledger</a>
+        {% if is_consumer %}
+          <a href="/consumer/products" class="nav-btn">My Products</a>
+        {% endif %}
+      </nav>
+    </div>
 
-<h2>Verify Product</h2>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#EAF1F6;font-size:12px;font-weight:600;color:#2F4156">
+        <span style="width:7px;height:7px;border-radius:999px;background:#2F4156"></span>
+        Ganache Live
+      </span>
+      {% if logged_in %}
+        {% if is_consumer %}
+          <a href="/consumer/dashboard" style="font-size:13px;font-weight:600;color:#567C8D;padding:6px 12px">Dashboard</a>
+          <a href="/consumer/logout" style="font-size:13px;font-weight:600;color:#2F4156;padding:6px 14px;border:1px solid #C8D9E6;border-radius:999px">Log out</a>
+        {% elif is_seller %}
+          <a href="/seller/dashboard" style="font-size:13px;font-weight:600;color:#567C8D;padding:6px 12px">Dashboard</a>
+          <a href="/seller/logout" style="font-size:13px;font-weight:600;color:#2F4156;padding:6px 14px;border:1px solid #C8D9E6;border-radius:999px">Log out</a>
+        {% elif is_manufacturer %}
+          <a href="/manufacturer/dashboard" style="font-size:13px;font-weight:600;color:#567C8D;padding:6px 12px">Dashboard</a>
+          <a href="/manufacturer/logout" style="font-size:13px;font-weight:600;color:#2F4156;padding:6px 14px;border:1px solid #C8D9E6;border-radius:999px">Log out</a>
+        {% endif %}
+      {% else %}
+        <a href="/consumer/login" style="font-size:13px;font-weight:600;color:#2F4156;padding:6px 16px;border:1px solid #C8D9E6;border-radius:999px">Sign in</a>
+      {% endif %}
+    </div>
+  </header>
 
-<p>This page will be used by customers.</p>
+  <!-- Main Container -->
+  <main style="flex:1;padding:36px 32px 64px;background:#ffffff">
+    <div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:32px">
 
-<a href="/">Home</a>
+      <!-- Header & Search Bar -->
+      <div style="display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center">
+        <h1 style="margin:0;font-size:32px;font-weight:700;letter-spacing:-0.03em;color:#2F4156">
+          Product Verification
+        </h1>
 
-{% endblock %}
+        <!-- Search Form -->
+        <form action="/verify" method="GET" id="searchVerifyForm" style="display:flex;align-items:center;gap:8px;padding:6px 6px 6px 20px;width:min(100%,520px);background:#fff;border:1px solid #C8D9E6;border-radius:999px;box-shadow:0 10px 30px -12px rgba(47,65,86,0.18)">
+          <input type="text" name="serial" id="serialSearchInput" value="{{ current_serial or '' }}" placeholder="Enter serial number, e.g. 1001" style="flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:15px;font-family:'JetBrains Mono',monospace;background:transparent;color:#2F4156" required>
+          <button type="submit" class="action-btn" style="height:44px;padding:0 24px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">Verify</button>
+        </form>
+      </div>
+
+      <!-- Verification Results Area -->
+      {% if product %}
+        <div style="display:grid;grid-template-columns:minmax(300px, 380px) 1fr;gap:28px;align-items:start">
+          
+          <!-- Product Left Card -->
+          <div class="card-box" style="display:flex;flex-direction:column;gap:20px">
+            <div style="border-radius:16px;overflow:hidden;background:#F6F9FB;border:1px solid #EAF1F6;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3">
+              {% if product[4] %}
+                <img src="{{ url_for('static', filename='product_images/' ~ product[4]) }}" alt="{{ product[1] }}" style="width:100%;height:100%;object-fit:cover">
+              {% else %}
+                <div style="font-size:48px;color:#567C8D">📦</div>
+              {% endif %}
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:13px;font-weight:600;color:#567C8D;text-transform:uppercase;letter-spacing:0.04em">{{ product[0] }}</span>
+              <h2 style="margin:0;font-size:22px;font-weight:700;color:#2F4156">{{ product[1] }}</h2>
+              <span style="font-size:14px;color:#567C8D">{{ product[2] }}</span>
+            </div>
+
+            <div style="padding-top:12px;border-top:1px solid #EAF1F6;display:flex;flex-direction:column;gap:12px">
+              <div class="detail-row">
+                <span class="detail-label">Serial Number</span>
+                <span class="detail-value" style="font-family:'JetBrains Mono',monospace;padding:3px 10px;background:#EAF1F6;border-radius:8px">#{{ product[3] }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span style="padding:4px 12px;border-radius:999px;background:#EAF1F6;color:#2F4156;font-size:12px;border:1px solid #C8D9E6">
+                    {{ product[5] or 'Registered' }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Current Custody</span>
+                <span class="detail-value">{{ product[6] or 'Supply Chain' }}</span>
+              </div>
+            </div>
+
+            <a href="/history/{{ product[3] }}" style="display:flex;align-items:center;justify-content:center;height:42px;border:1px solid #C8D9E6;border-radius:999px;font-size:13px;font-weight:600;color:#2F4156;background:#fff;transition:all 0.15s">
+              View Blockchain History →
+            </a>
+          </div>
+
+          <!-- Verification Details Right Column -->
+          <div style="display:flex;flex-direction:column;gap:24px">
+
+            <!-- Blockchain Consensus Card -->
+            <div class="card-box" style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:#2F4156">
+                  ⛓ Blockchain Verification
+                </h3>
+                {% if blockchain and blockchain.exists %}
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#EAF1F6;font-size:12px;font-weight:600;color:#2F4156;border:1px solid #C8D9E6">
+                    <span style="width:7px;height:7px;border-radius:999px;background:#2F4156"></span>
+                    Verified on Smart Contract
+                  </span>
+                {% else %}
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#FEF2F2;font-size:12px;font-weight:600;color:#991B1B;border:1px solid #FECACA">
+                    <span style="width:7px;height:7px;border-radius:999px;background:#DC2626"></span>
+                    Unregistered on Current Contract
+                  </span>
+                {% endif %}
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div class="detail-row">
+                  <span class="detail-label">Smart Contract Network</span>
+                  <span class="detail-value">Ganache Local RPC</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Manufacturer</span>
+                  <span class="detail-value">{{ (blockchain.manufacturer if blockchain and blockchain.manufacturer else product[0]) or 'Registered' }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Authorized Seller</span>
+                  <span class="detail-value">{{ (blockchain.seller if blockchain and blockchain.seller else 'Not Assigned') }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Consumer Custody</span>
+                  <span class="detail-value">{{ (blockchain.consumer if blockchain and blockchain.consumer else 'Not Assigned') }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Photo Verification Card -->
+            <div class="card-box" style="display:flex;flex-direction:column;gap:18px">
+              <h3 style="margin:0;font-size:18px;font-weight:700;color:#2F4156">
+                🤖 AI Visual Verification
+              </h3>
+
+              {% if logged_in %}
+                <form action="/verify-image" method="POST" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:16px">
+                  <input type="hidden" name="serial_no" value="{{ product[3] }}">
+
+                  <label for="consumer_image" style="min-height:140px;border:2px dashed #C8D9E6;border-radius:16px;background:#F6F9FB;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;padding:20px;text-align:center;transition:border-color 0.15s">
+                    <input type="file" name="consumer_image" id="consumer_image" accept="image/*" required style="display:none" onchange="handleImageSelected(event)">
+                    <div style="font-size:28px">📷</div>
+                    <span id="uploadLabelText" style="font-size:14px;font-weight:600;color:#2F4156">Click to upload product photo</span>
+                    <span style="font-size:12px;color:#567C8D">AI inspects image against factory reference</span>
+                  </label>
+
+                  <button type="submit" class="action-btn" style="height:46px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28)">
+                    Verify with AI
+                  </button>
+                </form>
+              {% else %}
+                <div style="display:flex;flex-direction:column;gap:14px;padding:18px;background:#F6F9FB;border-radius:16px;border:1px solid #EAF1F6">
+                  <span style="font-size:14px;color:#567C8D">
+                    Sign in to your Consumer account to run deep learning AI image verification on this product.
+                  </span>
+                  <a href="/consumer/login" class="action-btn" style="height:42px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#2F4156;color:#fff;font-size:13px;font-weight:600;text-align:center">
+                    Sign in to Verify Image
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+
+          </div>
+
+        </div>
+
+      {% elif searched_serial %}
+        <!-- Product Not Found Notice -->
+        <div class="card-box" style="text-align:center;padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div style="font-size:40px">🔍</div>
+          <h2 style="margin:0;font-size:20px;font-weight:700;color:#2F4156">No Product Found for #{{ searched_serial }}</h2>
+          <span style="font-size:14px;color:#567C8D;max-width:440px">
+            The serial number could not be located in the product registry. Select one of the registered items below to test verification.
+          </span>
+        </div>
+      {% endif %}
+
+      <!-- Available / Recent Products for Quick Verification -->
+      {% if sample_products %}
+        <div style="display:flex;flex-direction:column;gap:18px;margin-top:12px">
+          <h3 style="margin:0;font-size:18px;font-weight:700;color:#2F4156">
+            Registered Products
+          </h3>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px">
+            {% for sp in sample_products %}
+              <div class="prod-card">
+                <div style="padding:10px 10px 0">
+                  {% if sp[4] %}
+                    <img src="{{ url_for('static', filename='product_images/' ~ sp[4]) }}" alt="{{ sp[1] }}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;background:#F6F9FB">
+                  {% else %}
+                    <div style="width:100%;aspect-ratio:4/3;border-radius:14px;background:#F6F9FB;display:flex;align-items:center;justify-content:center;font-size:36px;color:#567C8D">📦</div>
+                  {% endif %}
+                </div>
+
+                <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:12px;font-weight:600;color:#567C8D;text-transform:uppercase">{{ sp[0] }}</span>
+                    <span style="font-size:15px;font-weight:600;color:#2F4156;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sp[1] }}</span>
+                    <span style="font-size:13px;color:#567C8D">{{ sp[2] }}</span>
+                  </div>
+
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <span style="padding:4px 10px;border-radius:8px;background:#EAF1F6;font-family:'JetBrains Mono',monospace;font-size:12px;color:#2F4156">#{{ sp[3] }}</span>
+                    <span style="font-size:12px;color:#567C8D">{{ sp[5] or 'Registered' }}</span>
+                  </div>
+
+                  <a href="/verify/{{ sp[3] }}" class="action-btn" style="height:38px;margin-top:4px;border-radius:999px;background:#2F4156;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">
+                    Verify Product
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </main>
+
+</div>
+
+<script>
+  function handleImageSelected(event) {
+    const file = event.target.files[0];
+    if (file) {
+      document.getElementById('uploadLabelText').textContent = 'Selected: ' + file.name;
+    }
+  }
+
+  // Handle direct serial input enter
+  const searchForm = document.getElementById('searchVerifyForm');
+  if (searchForm) {
+    searchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const s = document.getElementById('serialSearchInput').value.trim();
+      if (s) {
+        window.location.href = '/verify/' + encodeURIComponent(s);
+      }
+    });
+  }
+</script>
+</body>
+</html>

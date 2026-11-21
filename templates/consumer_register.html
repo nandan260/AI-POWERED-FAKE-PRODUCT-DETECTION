@@ -1,33 +1,200 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  input::placeholder {
+    color: #567C8D;
+  }
+  .role-btn {
+    height: 36px;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #567C8D;
+    transition: all 0.15s ease;
+  }
+  .role-btn.active {
+    background: #fff;
+    color: #2F4156;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .btn-hover:hover {
+    background: #567C8D !important;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;padding:0;display:flex;flex-direction:column">
+  <div style="position:relative;flex:1;min-height:100vh;background:#fff;overflow:hidden;display:flex;flex-direction:column">
+    
+    <!-- Canvas Particle Background -->
+    <canvas id="bgCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
 
-{% block title %}Consumer Registration{% endblock %}
+    <!-- Top Navigation Bar -->
+    <nav style="position:relative;display:flex;justify-content:center;align-items:center;gap:32px;padding:18px 24px;flex-wrap:wrap">
+      <a href="/" style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#2F4156"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        ProductGuard
+      </a>
+      <a href="/" style="font-size:14px;color:#567C8D">Home</a>
+    </nav>
 
-{% block content %}
-<div class="auth-page">
-<div class="card">
+    <!-- Main Register Area -->
+    <main style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:16px 20px">
+      <div style="width:min(100%,400px);display:flex;flex-direction:column;gap:20px">
+        <h1 style="margin:0;text-align:center;font-size:36px;line-height:1.1;font-weight:600;letter-spacing:-0.035em">
+          <span style="display:block;color:#567C8D">Join us</span>
+          <span style="display:block">Create account</span>
+        </h1>
 
-<h2>Consumer Registration</h2>
+        <!-- Role Selectors -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);padding:4px;background:#F5EFEB;border-radius:999px">
+          <button type="button" class="role-btn" id="btnManufacturer" onclick="setRole('Manufacturer')">Manufacturer</button>
+          <button type="button" class="role-btn" id="btnSeller" onclick="setRole('Seller')">Seller</button>
+          <button type="button" class="role-btn active" id="btnConsumer" onclick="setRole('Consumer')">Consumer</button>
+        </div>
 
-<form method="POST">
+        <!-- Registration Form -->
+        <form id="registerForm" method="POST" action="/consumer/register" style="display:flex;flex-direction:column;gap:12px">
+          <!-- Dynamic Name Field -->
+          <input type="text" id="nameInput" name="full_name" required placeholder="Full Name" style="height:48px;padding:0 20px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;background:#fff;color:#2F4156">
+          
+          <!-- Email Field -->
+          <input type="email" name="email" required placeholder="Email address" style="height:48px;padding:0 20px;border:1px solid #C8D9E6;border-radius:999px;font:inherit;font-size:14px;outline:0;background:#fff;color:#2F4156">
+          
+          <!-- Password Field with Toggle -->
+          <div style="display:flex;align-items:center;height:48px;padding:0 8px 0 20px;border:1px solid #C8D9E6;border-radius:999px;background:#fff">
+            <input type="password" id="pwInput" name="password" required placeholder="Create password" style="flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:14px;background:transparent;color:#2F4156">
+            <button type="button" id="pwToggleBtn" onclick="togglePw()" style="height:32px;padding:0 12px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:600;color:#567C8D;cursor:pointer">Show</button>
+          </div>
 
-    <label>Full Name</label>
-    <input type="text" name="full_name" required>
+          <button type="submit" id="submitBtn" class="btn-hover" style="margin-top:6px;height:48px;border:0;border-radius:999px;background:#2F4156;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 18px -6px rgba(47,65,86,0.28), 0 4px 14px -6px rgba(86,124,141,0.25);transition:all 0.15s ease">Create Consumer Account</button>
+        </form>
 
-    <label>Email</label>
-    <input type="email" name="email" required>
+        <!-- Sign-in Link -->
+        <div style="display:flex;justify-content:center;gap:6px;font-size:13px;color:#567C8D">
+          <span>Already have an account?</span>
+          <a href="/consumer/login" id="signInLink" style="font-weight:600">Sign in</a>
+        </div>
+      </div>
+    </main>
 
-    <label>Password</label>
-    <input type="password" name="password" required>
-
-    <input type="submit" value="Register">
-
-</form>
-
-<br>
-
-<a href="/">Home</a>
-<a href="{{ url_for('consumer_register') }}">Consumer Register</a>
-
+  </div>
 </div>
-</div>
-{% endblock %}
+
+<script>
+  let currentRole = 'Consumer';
+  const roleConfig = {
+    'Manufacturer': {
+      action: '/manufacturer/register',
+      nameField: 'company_name',
+      namePlaceholder: 'Company Name',
+      btnText: 'Create Manufacturer Account',
+      loginUrl: '/manufacturer/login'
+    },
+    'Seller': {
+      action: '/seller/register',
+      nameField: 'shop_name',
+      namePlaceholder: 'Shop Name',
+      btnText: 'Create Seller Account',
+      loginUrl: '/seller/login'
+    },
+    'Consumer': {
+      action: '/consumer/register',
+      nameField: 'full_name',
+      namePlaceholder: 'Full Name',
+      btnText: 'Create Consumer Account',
+      loginUrl: '/consumer/login'
+    }
+  };
+
+  function setRole(role) {
+    currentRole = role;
+    const cfg = roleConfig[role];
+    document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn' + role).classList.add('active');
+    
+    const form = document.getElementById('registerForm');
+    form.action = cfg.action;
+    
+    const nameInput = document.getElementById('nameInput');
+    nameInput.name = cfg.nameField;
+    nameInput.placeholder = cfg.namePlaceholder;
+    
+    document.getElementById('submitBtn').textContent = cfg.btnText;
+    document.getElementById('signInLink').href = cfg.loginUrl;
+  }
+
+  function togglePw() {
+    const pw = document.getElementById('pwInput');
+    const btn = document.getElementById('pwToggleBtn');
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      btn.textContent = 'Hide';
+    } else {
+      pw.type = 'password';
+      btn.textContent = 'Show';
+    }
+  }
+
+  // Canvas particle background
+  (function() {
+    const c = document.getElementById('bgCanvas');
+    if (!c) return;
+
+    function draw() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = c.offsetWidth;
+      const h = c.offsetHeight;
+      if (!w || !h) return;
+      c.width = w * dpr;
+      c.height = h * dpr;
+      const ctx = c.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const colors = ['rgba(86,124,141,0.06)', 'rgba(47,65,86,0.05)', 'rgba(200,217,230,0.4)'];
+      for (let i = 0; i < 28; i++) {
+        const x = (i * 137.5) % w;
+        const y = (i * 93.3) % h;
+        const r = 2 + (i % 4) * 2;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+      }
+    }
+
+    window.addEventListener('resize', draw);
+    draw();
+  })();
+</script>
+</body>
+</html>

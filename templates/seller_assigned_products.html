@@ -1,41 +1,201 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seller Inventory - ProductGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2F4156;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: #2F4156;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: #567C8D;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  .nav-btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #567C8D;
+    background: transparent;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover {
+    background: #F5EFEB;
+    color: #2F4156;
+  }
+  .nav-btn.active {
+    background: #2F4156;
+    color: #fff;
+  }
+  .row-hover {
+    transition: background 0.15s ease;
+  }
+  .row-hover:hover {
+    background: #F6F9FB;
+  }
+  .search-input {
+    height: 42px;
+    padding: 0 18px;
+    border: 1px solid #C8D9E6;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #2F4156;
+    outline: none;
+    background: #fff;
+    width: min(100%, 300px);
+    transition: border-color 0.15s ease;
+  }
+  .search-input:focus {
+    border-color: #2F4156;
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;flex-direction:column">
 
-{% block title %}Assigned Products{% endblock %}
+  <!-- Header -->
+  <header style="height:70px;border-bottom:1px solid #EAF1F6;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#fff">
+    <div style="display:flex;align-items:center;gap:28px">
+      <a href="/" style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em">
+        <div style="width:32px;height:32px;border-radius:999px;background:#2F4156;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 4 5v7c0 6 8 10 8 10s8-4 8-10V5z"></path></svg>
+        </div>
+        ProductGuard
+      </a>
 
-{% block content %}
+      <nav style="display:flex;align-items:center;gap:8px">
+        <a href="/seller/dashboard" class="nav-btn">Dashboard</a>
+        <a href="/seller/assigned-products" class="nav-btn active">Inventory</a>
+        <a href="/seller/assign-consumer" class="nav-btn">Assign Buyer</a>
+        <a href="/history" class="nav-btn">Ledger</a>
+      </nav>
+    </div>
 
-<h2>Assigned Products</h2>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#EAF1F6;font-size:12px;font-weight:600;color:#2F4156">
+        <span style="width:7px;height:7px;border-radius:999px;background:#2F4156"></span>
+        Seller Portal
+      </span>
+      <a href="/seller/logout" style="font-size:13px;font-weight:600;color:#567C8D;padding:6px 12px">Logout</a>
+    </div>
+  </header>
 
-<div class="table-wrap">
-<table>
+  <!-- Content -->
+  <main style="flex:1;padding:32px 36px;background:#F6F9FB">
+    <div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
+      
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+        <div>
+          <h1 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.03em;color:#2F4156">
+            Assigned Inventory
+          </h1>
+          
+        </div>
 
-<tr>
-    <th>Brand</th>
-    <th>Product</th>
-    <th>Model</th>
-    <th>Serial Number</th>
-    <th>Status</th>
-</tr>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="text" id="invSearch" class="search-input" placeholder="🔍 Filter inventory..." oninput="filterInv()">
+          <a href="/seller/assign-consumer" style="height:42px;padding:0 20px;border-radius:999px;background:#2F4156;color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px">
+            + Assign Buyer
+          </a>
+        </div>
+      </div>
 
-{% for product in products %}
+      <!-- Table Card -->
+      <div style="background:#fff;border:1px solid #EAF1F6;border-radius:20px;overflow:hidden;box-shadow:0 6px 24px rgba(47,65,86,0.04)">
+        <div style="display:grid;grid-template-columns:110px minmax(220px, 1.6fr) 110px 1.1fr 120px 140px;gap:14px;padding:16px 24px;background:#FAFCFD;border-bottom:1px solid #EAF1F6;font-size:12px;font-weight:700;color:#567C8D;letter-spacing:0.03em;text-transform:uppercase">
+          <span>Serial No</span>
+          <span>Product</span>
+          <span>Brand</span>
+          <span>Model</span>
+          <span>Status</span>
+          <span style="text-align:right">Action</span>
+        </div>
 
-<tr>
+        <div id="invRows">
+          {% if products %}
+            {% for product in products %}
+            <div class="row-hover inv-item" style="display:grid;grid-template-columns:110px minmax(220px, 1.6fr) 110px 1.1fr 120px 140px;gap:14px;align-items:center;padding:16px 24px;border-bottom:1px solid #F0F4F8;font-size:13px">
+              
+              <div>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#2F4156;padding:4px 8px;border-radius:6px;background:#EAF1F6;display:inline-block">
+                  #{{ product[4] }}
+                </span>
+              </div>
 
-<td>{{ product[1] }}</td>
-<td>{{ product[2] }}</td>
-<td>{{ product[3] }}</td>
-<td>{{ product[4] }}</td>
-<td>{{ product[5] }}</td>
+              <!-- Product with visible image -->
+              <div style="display:flex;align-items:center;gap:12px;min-width:0">
+                {% if product[5] %}
+                  <img src="{{ url_for('static', filename='product_images/' ~ product[5]) }}" alt="" style="width:44px;height:44px;border-radius:10px;object-fit:cover;background:#EAF1F6;border:1px solid #C8D9E6;flex-shrink:0" onerror="this.onerror=null;this.parentElement.innerHTML='<div style=\'width:44px;height:44px;border-radius:10px;background:#EAF1F6;display:flex;align-items:center;justify-content:center;color:#567C8D;font-size:16px;flex-shrink:0\'>📦</div>';">
+                {% else %}
+                  <div style="width:44px;height:44px;border-radius:10px;background:#EAF1F6;display:flex;align-items:center;justify-content:center;color:#567C8D;font-size:16px;flex-shrink:0">📦</div>
+                {% endif %}
+                <span style="font-weight:600;color:#2F4156;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ product[2] }}</span>
+              </div>
 
-</tr>
+              <div style="font-weight:600;color:#2F4156">{{ product[1] }}</div>
+              <div style="color:#567C8D;font-family:'JetBrains Mono',monospace;font-size:12px">{{ product[3] }}</div>
 
-{% endfor %}
+              <div>
+                {% set stat_lbl = 'In Stock' if product[6] == 'Assigned' else ('With Consumer' if product[6] == 'Assigned to Consumer' else product[6]) %}
+                <span style="padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:#EAF1F6;color:#2F4156;border:1px solid #C8D9E6">
+                  {{ stat_lbl }}
+                </span>
+              </div>
 
-</table>
+              <div style="display:flex;justify-content:flex-end;gap:8px">
+                <a href="/history/{{ product[4] }}" style="height:32px;padding:0 12px;border:1px solid #C8D9E6;border-radius:999px;font-size:12px;font-weight:600;color:#2F4156;display:inline-flex;align-items:center;background:#fff">
+                  Ledger
+                </a>
+                {% if product[6] == 'Assigned' %}
+                <a href="/seller/assign-consumer" style="height:32px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;background:#2F4156;display:inline-flex;align-items:center">
+                  Assign
+                </a>
+                {% endif %}
+              </div>
+
+            </div>
+            {% endfor %}
+          {% else %}
+            <div style="padding:48px 24px;text-align:center;color:#567C8D">
+              <div style="font-size:32px;margin-bottom:8px">📦</div>
+              <div style="font-size:16px;font-weight:600;color:#2F4156">No Products Assigned</div>
+              <div style="font-size:13px;margin-top:4px">No manufacturer items currently assigned to this seller account.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </main>
+
 </div>
 
-<br>
-
-<a href="/seller/dashboard">Back</a>
-
-{% endblock %}
+<script>
+  function filterInv() {
+    const q = document.getElementById('invSearch').value.toLowerCase().trim();
+    document.querySelectorAll('.inv-item').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? 'grid' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
